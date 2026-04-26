@@ -1,0 +1,173 @@
+/**
+ * 手串DIY小程序 - 全局样式变量
+ * 配色方案：轻奢国风 - 淡雅金色系
+ * 
+ * 使用方式：
+ * 在页面style标签顶部引入：@import '@/static/styles/variables.scss';
+ */
+
+// ============================================
+// 主色调 - 国风淡雅金
+// ============================================
+$primary: #C9A86C;           // 主色：哑光金（品牌色）
+$primary-light: #E8D4A8;     // 浅金（hover/高亮）
+$primary-dark: #A6855A;      // 深金（active/强调）
+$primary-gradient: linear-gradient(135deg, #D4B896 0%, #C9A86C 50%, #B8956A 100%); // 金色渐变
+
+// ============================================
+// 辅助色
+// ============================================
+$secondary: #8B9A7C;         // 墨绿（自然系，用于DIY相关）
+$secondary-light: #A8B899;   // 浅墨绿
+$accent: #D4A5A5;            // 藕粉（温柔感，用于严选相关）
+$accent-light: #E8C4C4;      // 浅藕粉
+
+// ============================================
+// 中性色 - 背景与文字
+// ============================================
+$bg-primary: #FAFAF8;        // 主背景：米白色
+$bg-secondary: #F5F5F3;      // 次要背景：浅灰米
+$bg-card: #FFFFFF;           // 卡片背景：纯白
+$bg-hover: #F9F9F7;          // 悬停背景
+
+$text-primary: #2C2C2C;      // 主文字：深灰黑
+$text-secondary: #6B7280;    // 次要文字：中灰
+$text-tertiary: #9CA3AF;     // 辅助文字：浅灰
+$text-white: #FFFFFF;        // 白色文字
+
+// ============================================
+// 功能色
+// ============================================
+$success: #10B981;           // 成功
+$success-light: #D1FAE5;     // 成功浅背景
+$warning: #F59E0B;           // 警告
+$warning-light: #FEF3C7;     // 警告浅背景
+$error: #EF4444;             // 错误
+$error-light: #FEE2E2;       // 错误浅背景
+$info: #3B82F6;              // 信息
+$info-light: #DBEAFE;        // 信息浅背景
+
+// ============================================
+// 功能卡片专用色（个人中心四宫格）
+// ============================================
+$card-pink: #FCE7F3;         // 粉色卡片背景
+$card-pink-icon: #EC4899;    // 粉色图标
+$card-purple: #F3E8FF;       // 紫色卡片背景
+$card-purple-icon: #A855F7;  // 紫色图标
+$card-blue: #E0F2FE;         // 蓝色卡片背景
+$card-blue-icon: #0EA5E9;    // 蓝色图标
+$card-green: #DCFCE7;        // 绿色卡片背景
+$card-green-icon: #22C55E;   // 绿色图标
+
+// ============================================
+// 边框与分割线
+// ============================================
+$border-color: #E5E7EB;      // 边框色
+$border-light: #F3F4F6;      // 浅色边框
+$divider: #E5E7EB;           // 分割线
+
+// ============================================
+// 阴影
+// ============================================
+$shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 8rpx 30rpx rgba(0, 0, 0, 0.08);
+$shadow-xl: 0 12rpx 40rpx rgba(0, 0, 0, 0.12);
+
+// ============================================
+// 圆角
+// ============================================
+$radius-sm: 12rpx;
+$radius-md: 20rpx;
+$radius-lg: 32rpx;
+$radius-xl: 48rpx;
+$radius-full: 9999rpx;
+
+// ============================================
+// 间距系统
+// ============================================
+$space-xs: 8rpx;
+$space-sm: 16rpx;
+$space-md: 24rpx;
+$space-lg: 32rpx;
+$space-xl: 48rpx;
+$space-2xl: 64rpx;
+
+// ============================================
+// 字体大小
+// ============================================
+$text-xs: 20rpx;
+$text-sm: 24rpx;
+$text-base: 28rpx;
+$text-md: 32rpx;
+$text-lg: 36rpx;
+$text-xl: 40rpx;
+$text-2xl: 48rpx;
+
+// ============================================
+// 字重
+// ============================================
+$font-normal: 400;
+$font-medium: 500;
+$font-semibold: 600;
+$font-bold: 700;
+
+// ============================================
+// 通用混入（Mixins）
+// ============================================
+
+// flex 居中
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// flex 垂直居中
+@mixin flex-y-center {
+  display: flex;
+  align-items: center;
+}
+
+// 卡片基础样式
+@mixin card-base {
+  background-color: $bg-card;
+  border-radius: $radius-md;
+  box-shadow: $shadow-md;
+}
+
+// 按钮基础样式
+@mixin btn-base {
+  @include flex-center;
+  border-radius: $radius-full;
+  font-size: $text-base;
+  font-weight: $font-medium;
+  transition: all 0.2s ease;
+  
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+}
+
+// 文字省略
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 多行文字省略
+@mixin text-ellipsis-multi($lines: 2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+}
+
+// 安全区域底部适配
+@mixin safe-bottom {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}

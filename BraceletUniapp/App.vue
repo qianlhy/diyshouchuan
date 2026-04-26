@@ -35,6 +35,36 @@ export default {
 }
 </script>
 
-<style>
-page { background-color: #f6f7fb; }
+<style lang="scss">
+@import '@/static/styles/variables.scss';
+@import '@/static/styles/animations.scss';
+
+/* 全局页面样式 */
+page {
+  background-color: $bg-primary;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 通用按钮重置 */
+button {
+  font-family: inherit;
+}
+
+button::after {
+  border: none;
+}
+
+/* 图片默认样式 */
+image {
+  display: block;
+}
+
+/* 滚动条样式优化 */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
 </style>

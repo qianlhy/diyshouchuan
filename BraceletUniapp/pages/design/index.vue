@@ -51,8 +51,13 @@
           
           <!-- 中心Logo -->
           <view class="center-logo" :style="{zIndex: 2}">
-            <image class="logo-img" :src="logoPath" mode="widthFix" />
-            <text class="logo-name">念初手作</text>
+            <view v-if="hasLogo" class="logo-img-wrap">
+              <image class="logo-img" :src="logoPath" mode="widthFix" @error="onLogoError" />
+            </view>
+            <view v-else class="logo-placeholder">
+              <text class="logo-placeholder-text">念</text>
+            </view>
+            <text class="logo-name">拾光手串</text>
           </view>
           
           <!-- 珠子 -->
@@ -470,6 +475,7 @@ const instance = getCurrentInstance()
 const isMounted = ref(false)
 const didInit = ref(false)
 const logoPath = '/static/logo/final_logo.jpg'
+const hasLogo = ref(true)
 console.log('Logo Path set to absolute:', logoPath)
 
 // 数据状态
@@ -629,6 +635,10 @@ function normalizeFilterValue(v) {
 function isPendant(bead) {
   const title = String(bead?.title || '')
   return title.endsWith('吊坠')
+}
+
+function onLogoError() {
+  hasLogo.value = false
 }
 
 // 判断是否为配饰（花托、隔片等，不计算在长度内，之间没有间隙）
@@ -2044,7 +2054,7 @@ async function generateDesignImage() {
       ctx.textBaseline = 'middle'
       ctx.fillStyle = '#bfbfbf'
       ctx.font = `${r2p(24)}px sans-serif`
-      ctx.fillText('念初手作', centerX, centerY)
+      ctx.fillText('拾光手串', centerX, centerY)
     }
     
     // 7. 绘制顶层珠子 (普通尺寸 < 24mm)
@@ -2234,41 +2244,45 @@ onShow(() => {
 </script>
 
 <style lang="scss">
+@import '@/static/styles/variables.scss';
+
 .page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #fff;
+  background-color: $bg-primary;
 }
 
-/* 顶部 Header */
+/* ========== 顶部 Header - 精致设计 ========== */
 .header {
-  height: 88rpx;
+  height: 96rpx;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24rpx;
-  background: #fff;
+  padding: 0 28rpx;
+  background: $bg-card;
   z-index: 100;
-  border-bottom: 1rpx solid #f5f5f5;
+  border-bottom: 1rpx solid $border-light;
 }
 
 .stat-box {
-  background: #fdf8f4;
-  padding: 8rpx 20rpx;
-  border-radius: 24rpx;
+  background: linear-gradient(135deg, rgba(201, 168, 108, 0.1) 0%, rgba(201, 168, 108, 0.05) 100%);
+  padding: 12rpx 24rpx;
+  border-radius: $radius-full;
+  border: 1rpx solid rgba(201, 168, 108, 0.15);
   
   .stat-text {
     font-size: 26rpx;
-    color: #d4a574;
-    font-weight: 600;
+    color: $primary;
+    font-weight: $font-semibold;
+    letter-spacing: 1rpx;
   }
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: 20rpx;
 }
 
 .price-box {
@@ -2277,71 +2291,81 @@ onShow(() => {
   
   .price-label {
     font-size: 24rpx;
-    color: #666;
-    margin-right: 4rpx;
+    color: $text-tertiary;
+    margin-right: 6rpx;
   }
   .price-num {
     font-size: 32rpx;
-    font-weight: bold;
-    color: #d4a574;
+    font-weight: $font-bold;
+    color: $primary;
   }
 }
 
 .action-btns {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: 12rpx;
 }
 
 .cart-btn {
   margin: 0;
-  padding: 0 20rpx;
-  height: 56rpx;
-  line-height: 56rpx;
+  padding: 0 24rpx;
+  height: 60rpx;
+  line-height: 60rpx;
   font-size: 24rpx;
-  background: #fff;
-  color: #d4a574;
-  border-radius: 28rpx;
-  border: 2rpx solid #d4a574;
+  background: $bg-card;
+  color: $primary;
+  border-radius: $radius-full;
+  border: 2rpx solid $primary;
+  font-weight: $font-medium;
+  transition: all 0.2s ease;
 
   &::after { border: none; }
 
   &:active {
-    background: #fdf8f3;
+    background: rgba(201, 168, 108, 0.1);
+    transform: scale(0.96);
   }
 
   &[disabled] {
-    background: #f5f5f5;
-    color: #ccc;
-    border-color: #eee;
+    background: $bg-secondary;
+    color: $text-tertiary;
+    border-color: $border-color;
   }
 }
 
 .checkout-btn {
   margin: 0;
-  padding: 0 24rpx;
-  height: 56rpx;
-  line-height: 56rpx;
+  padding: 0 28rpx;
+  height: 60rpx;
+  line-height: 60rpx;
   font-size: 24rpx;
-  background: #f8f8f8;
-  color: #666;
-  border-radius: 28rpx;
-  border: 1rpx solid #eee;
+  background: $bg-secondary;
+  color: $text-secondary;
+  border-radius: $radius-full;
+  border: none;
+  font-weight: $font-medium;
+  transition: all 0.2s ease;
   
   &::after { border: none; }
   
   &.ready {
-    background: #d4a574;
-    color: #fff;
-    border-color: #d4a574;
+    background: $primary-gradient;
+    color: $text-white;
+    box-shadow: 0 4rpx 16rpx rgba(201, 168, 108, 0.3);
+  }
+  
+  &:active.ready {
+    transform: scale(0.96);
+    box-shadow: 0 2rpx 8rpx rgba(201, 168, 108, 0.2);
   }
 }
 
-/* 主区域 */
+/* ========== 主区域 - 精致设计 ========== */
 .main-area {
   flex: 1;
   position: relative;
-  background: #fff;
+  background: $bg-primary;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -2349,19 +2373,26 @@ onShow(() => {
 
 .tip-icon {
   position: absolute;
-  top: 20rpx;
-  left: 20rpx;
-  width: 40rpx;
-  height: 40rpx;
+  top: 24rpx;
+  left: 24rpx;
+  width: 44rpx;
+  height: 44rpx;
   line-height: 40rpx;
   text-align: center;
   border-radius: 50%;
-  border: 2rpx solid #d4a574;
-  color: #d4a574;
+  border: 2rpx solid $primary;
+  color: $primary;
   font-size: 28rpx;
-  font-weight: bold;
+  font-weight: $font-bold;
   z-index: 50;
-  background: #fff;
+  background: $bg-card;
+  box-shadow: $shadow-sm;
+  transition: all 0.2s ease;
+  
+  &:active {
+    transform: scale(0.9);
+    background: rgba(201, 168, 108, 0.1);
+  }
 }
 
 .canvas-container {
@@ -2370,8 +2401,7 @@ onShow(() => {
   align-items: center;
   justify-content: center;
   position: relative;
-  padding-bottom: 96rpx;
-  /* margin-top: -60rpx; 移除上移，避免被Header遮挡 */
+  padding-bottom: 100rpx;
 }
 
 .canvas {
@@ -2385,11 +2415,12 @@ onShow(() => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 400rpx;
-  height: 400rpx;
+  width: 380rpx;
+  height: 380rpx;
   border-radius: 50%;
-  border: 2rpx solid #e0e0e0;
+  border: 3rpx dashed rgba(201, 168, 108, 0.25);
   z-index: 1;
+  background: radial-gradient(circle, transparent 60%, rgba(201, 168, 108, 0.02) 100%);
 }
 
 .center-logo {
@@ -2402,42 +2433,61 @@ onShow(() => {
   align-items: center;
   justify-content: center;
   z-index: 0;
-  opacity: 0.8;
+  opacity: 0.6;
+}
+
+.logo-placeholder {
+  width: 160rpx;
+  height: 160rpx;
+  margin-bottom: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(201, 168, 108, 0.1);
+  border-radius: 50%;
+}
+
+.logo-placeholder-text {
+  font-size: 60rpx;
+  color: #C9A86C;
+  font-weight: bold;
 }
 
 .logo-img {
-  width: 180rpx;
-  height: 180rpx;
-  margin-bottom: 10rpx;
+  width: 160rpx;
+  height: 160rpx;
+  margin-bottom: 12rpx;
+  opacity: 0.8;
 }
 
 .logo-name {
-  font-size: 24rpx;
-  color: #ccc;
-  letter-spacing: 4rpx;
+  font-size: 22rpx;
+  color: $text-tertiary;
+  letter-spacing: 6rpx;
+  font-weight: $font-medium;
 }
 
-/* 底部工具栏 */
+/* ========== 底部工具栏 - 精致设计 ========== */
 .toolbar-container {
   position: absolute;
-  left: 10rpx;
-  right: 10rpx;
-  bottom: 16rpx;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: 20rpx;
   z-index: 80;
   display: flex;
   align-items: center;
   margin: 0;
-  padding: 8rpx;
-  background: #f7f7f7;
-  border: 1rpx solid rgba(0, 0, 0, 0.05);
-  border-radius: 44rpx;
-  box-shadow: 0 10rpx 24rpx rgba(0, 0, 0, 0.08);
+  padding: 10rpx;
+  background: $bg-card;
+  border: 1rpx solid $border-light;
+  border-radius: $radius-full;
+  box-shadow: $shadow-md;
   transition: all 0.3s ease;
   overflow: visible;
   
   &.collapsed {
     right: auto;
-    width: 92rpx;
+    width: 100rpx;
     .tool-bar {
       flex: 0;
       width: 0;
@@ -2449,53 +2499,60 @@ onShow(() => {
 
 .tool-bar {
   flex: 1;
-  height: 72rpx;
+  height: 68rpx;
   display: flex;
   align-items: center;
-  gap: 10rpx;
-  padding: 0;
+  gap: 12rpx;
+  padding: 0 8rpx;
   transition: all 0.3s ease;
   
   .tool-item {
     flex: none;
-    height: 56rpx;
+    height: 52rpx;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    padding: 0 18rpx;
-    background: #ffffff;
-    border: 1rpx solid rgba(0, 0, 0, 0.06);
-    border-radius: 32rpx;
+    padding: 0 20rpx;
+    background: $bg-secondary;
+    border: 1rpx solid transparent;
+    border-radius: $radius-full;
     white-space: nowrap;
+    transition: all 0.2s ease;
+    
+    &:active {
+      transform: scale(0.95);
+    }
     
     .tool-icon-img {
-      font-size: 30rpx;
-      line-height: 30rpx;
+      font-size: 24rpx;
+      line-height: 24rpx;
       margin-right: 8rpx;
+      color: $text-secondary;
     }
     
     .tool-text {
       margin-top: 0;
       font-size: 24rpx;
       line-height: 24rpx;
-      color: rgba(0, 0, 0, 0.78);
+      color: $text-secondary;
+      font-weight: $font-medium;
     }
 
     &.active {
-      border-color: rgba(0, 0, 0, 0.14);
-      background: #ffffff;
-      .tool-text {
-        color: rgba(0, 0, 0, 0.9);
-        font-weight: 600;
+      background: rgba(201, 168, 108, 0.12);
+      border-color: rgba(201, 168, 108, 0.3);
+      .tool-text, .tool-icon-img {
+        color: $primary;
+        font-weight: $font-semibold;
       }
     }
   }
 }
 
 .tool-collapse-hit {
-  width: 72rpx;
-  height: 72rpx;
+  width: 68rpx;
+  height: 68rpx;
   padding-right: 56rpx;
   margin-right: -56rpx;
   display: flex;
@@ -2506,39 +2563,49 @@ onShow(() => {
 }
 
 .tool-collapse-btn {
-  width: 72rpx;
-  height: 72rpx;
+  width: 68rpx;
+  height: 68rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
-  border: 1rpx solid rgba(0, 0, 0, 0.06);
-  border-radius: 36rpx;
+  background: $bg-secondary;
+  border: 1rpx solid $border-light;
+  border-radius: 50%;
   position: relative;
   z-index: 2;
-  box-shadow: none;
+  transition: all 0.2s ease;
+  
+  &:active {
+    background: $bg-hover;
+    transform: scale(0.95);
+  }
 }
 
 .collapse-icon {
-  font-size: 44rpx;
-  color: rgba(0, 0, 0, 0.45);
+  font-size: 40rpx;
+  color: $text-tertiary;
+  font-weight: $font-normal;
 }
 
-/* 商品选择区 */
+/* ========== 商品选择区 - 精致设计 ========== */
 .goods-section {
-  height: 600rpx; /* 增加高度，利用工具栏节省的空间 */
-  background: #fff;
+  height: 580rpx;
+  background: $bg-card;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 -4rpx 16rpx rgba(0,0,0,0.05);
+  box-shadow: 0 -4rpx 20rpx rgba(0,0,0,0.04);
+  border-radius: 32rpx 32rpx 0 0;
+  margin-top: -16rpx;
+  position: relative;
+  z-index: 10;
 }
 
 .section-header {
-  height: 80rpx;
-  border-bottom: 1rpx solid #f0f0f0;
+  height: 84rpx;
+  border-bottom: 1rpx solid $border-light;
   display: flex;
   align-items: center;
-  padding: 0 20rpx;
+  padding: 0 24rpx;
 }
 
 /* 搜索框样式 */
@@ -2553,34 +2620,41 @@ onShow(() => {
   align-items: center;
   width: 280rpx;
   height: 56rpx;
-  background: #f5f5f5;
-  border-radius: 28rpx;
+  background: $bg-secondary;
+  border-radius: $radius-full;
   padding: 0 20rpx;
+  border: 1rpx solid transparent;
+  transition: all 0.2s ease;
+  
+  &:focus-within {
+    border-color: rgba(201, 168, 108, 0.3);
+    background: $bg-card;
+  }
 }
 
 .search-icon {
   font-size: 24rpx;
   margin-right: 12rpx;
-  color: #999;
+  color: $text-tertiary;
 }
 
 .search-input {
   flex: 1;
   height: 100%;
   font-size: 24rpx;
-  color: #333;
+  color: $text-primary;
   background: transparent;
   border: none;
   outline: none;
 }
 
 .search-input::placeholder {
-  color: #bbb;
+  color: $text-tertiary;
 }
 
 .search-clear {
   font-size: 20rpx;
-  color: #999;
+  color: $text-tertiary;
   padding: 8rpx;
   margin-left: 8rpx;
 }
@@ -2675,34 +2749,39 @@ onShow(() => {
 .category-tabs {
   white-space: nowrap;
   height: 100%;
-  line-height: 80rpx;
+  line-height: 84rpx;
   flex: 1;
   overflow: hidden;
 }
 
 .cat-tab {
   display: inline-block;
-  padding: 0 30rpx;
+  padding: 0 28rpx;
   font-size: 28rpx;
-  color: #999;
+  color: $text-tertiary;
   position: relative;
+  transition: all 0.2s ease;
   
   &.active {
-    color: #333;
-    font-weight: bold;
+    color: $primary;
+    font-weight: $font-semibold;
     font-size: 30rpx;
     
     &::after {
       content: '';
       position: absolute;
-      bottom: 16rpx;
+      bottom: 18rpx;
       left: 50%;
       transform: translateX(-50%);
-      width: 40rpx;
-      height: 6rpx;
-      background: #d4a574;
-      border-radius: 4rpx;
+      width: 24rpx;
+      height: 4rpx;
+      background: $primary;
+      border-radius: 2rpx;
     }
+  }
+  
+  &:active {
+    opacity: 0.7;
   }
 }
 
@@ -2712,53 +2791,58 @@ onShow(() => {
   overflow: hidden;
 }
 
-/* 色系侧栏 */
+/* 色系侧栏 - 精致设计 */
 .color-sidebar {
-  width: 160rpx;
-  background: #f8f8f8;
+  width: 150rpx;
+  background: $bg-secondary;
   
   .sidebar-group {
-    margin-bottom: 10rpx;
+    margin-bottom: 0;
   }
   
   .group-divider {
-    height: 2rpx;
-    background: #e0e0e0;
+    height: 1rpx;
+    background: $border-light;
     margin: 0;
   }
 
   .color-tag {
-    height: 90rpx;
-    line-height: 90rpx;
+    height: 88rpx;
+    line-height: 88rpx;
     text-align: center;
     font-size: 26rpx;
-    color: #666;
+    color: $text-secondary;
+    transition: all 0.2s ease;
     
     &.active {
-      background: #fff;
-      color: #d4a574;
-      font-weight: bold;
+      background: $bg-card;
+      color: $primary;
+      font-weight: $font-semibold;
       position: relative;
       
       &::before {
         content: '';
         position: absolute;
         left: 0;
-        top: 30rpx;
-        bottom: 30rpx;
-        width: 6rpx;
-        background: #d4a574;
-        border-radius: 0 4rpx 4rpx 0;
+        top: 28rpx;
+        bottom: 28rpx;
+        width: 4rpx;
+        background: $primary;
+        border-radius: 0 2rpx 2rpx 0;
       }
+    }
+    
+    &:active:not(.active) {
+      background: rgba(201, 168, 108, 0.05);
     }
   }
 }
 
-/* 商品列表 Grid */
+/* 商品列表 Grid - 精致卡片 */
 .product-area {
   flex: 1;
-  background: #fff;
-  padding: 20rpx;
+  background: $bg-card;
+  padding: 24rpx;
 }
 
 .product-list {
@@ -2772,17 +2856,29 @@ onShow(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #fff;
-  border-radius: 20rpx;
+  background: $bg-card;
+  border-radius: $radius-md;
   overflow: hidden;
-  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.08);
+  border: 1rpx solid $border-light;
   padding-bottom: 16rpx;
+  transition: all 0.25s ease;
+  
+  &:active {
+    transform: translateY(-2rpx);
+    box-shadow: $shadow-md;
+    border-color: rgba(201, 168, 108, 0.2);
+  }
+  
+  &.soldout {
+    opacity: 0.5;
+  }
   
   .p-visual {
     width: 100%;
     position: relative;
-    padding-bottom: 100%; /* 正方形 */
+    padding-bottom: 100%;
     margin-bottom: 8rpx;
+    background: $bg-secondary;
     
     .p-bead {
       position: absolute;
@@ -2805,25 +2901,25 @@ onShow(() => {
     
     .p-stock {
       position: absolute;
-      top: 12rpx;
-      left: 12rpx;
-      background: rgba(0,0,0,0.6);
+      top: 8rpx;
+      left: 8rpx;
+      background: rgba(0,0,0,0.5);
       color: #fff;
-      font-size: 20rpx;
-      padding: 4rpx 12rpx;
+      font-size: 18rpx;
+      padding: 4rpx 10rpx;
       border-radius: 20rpx;
       z-index: 2;
+      font-weight: $font-medium;
     }
   }
   
   .p-name {
-    font-size: 24rpx;
-    color: #333;
-    font-weight: bold;
-    width: 96%;
+    font-size: 22rpx;
+    color: $text-primary;
+    font-weight: $font-medium;
+    width: 92%;
     text-align: center;
     
-    /* 改为双行显示 */
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -2832,20 +2928,20 @@ onShow(() => {
     white-space: normal;
     
     margin-bottom: 8rpx;
-    height: 72rpx; /* 固定高度，确保对齐 */
-    line-height: 36rpx;
+    height: 64rpx;
+    line-height: 32rpx;
   }
   
   .p-price {
-    font-size: 28rpx;
-    color: #333;
-    font-weight: bold;
+    font-size: 26rpx;
+    color: $primary;
+    font-weight: $font-bold;
     margin-bottom: 4rpx;
   }
   
   .p-size {
-    font-size: 22rpx;
-    color: #999;
+    font-size: 20rpx;
+    color: $text-tertiary;
   }
 }
 

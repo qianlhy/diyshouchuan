@@ -17,7 +17,7 @@
       <!-- 未登录状态 -->
       <block v-else>
         <view class="info-icon-wrapper">
-          <text class="info-icon">i</text>
+          <IconFont type="person-filled" size="88" color="#fff"></IconFont>
         </view>
         <view class="user-info">
           <text class="nickname">Hi，欢迎光临</text>
@@ -55,7 +55,7 @@
       <!-- DIY定制 -->
       <view class="action-card diy-card" @click="goDesign">
         <view class="icon-wrapper diy-icon-bg">
-          <image class="card-icon" src="/static/tabbar/design_selected.png" mode="aspectFit"></image>
+          <IconFont type="color" size="64" color="#fff"></IconFont>
         </view>
         <view class="card-text">
           <text class="card-title">DIY定制</text>
@@ -63,13 +63,13 @@
         </view>
       </view>
 
-      <!-- 念初严选 -->
-      <view class="action-card select-card" @click="goProductList">
-        <view class="icon-wrapper select-icon-bg">
-          <image class="card-icon" src="/static/tabbar/cart_selected.png" mode="aspectFit"></image>
+      <!-- 成品选购 -->
+      <view class="action-card shop-card" @click="goProducts">
+        <view class="icon-wrapper shop-icon-bg">
+          <IconFont type="shop" size="64" color="#fff"></IconFont>
         </view>
         <view class="card-text">
-          <text class="card-title">念初严选</text>
+          <text class="card-title">成品选购</text>
           <text class="card-subtitle">精选成品手链</text>
         </view>
       </view>
@@ -77,7 +77,7 @@
 
     <!-- 底部Slogan -->
     <view class="footer">
-      <text class="footer-text">念初手作 · 匠心定制</text>
+      <text class="footer-text">拾光手串 · 匠心定制</text>
     </view>
 
     <!-- 完善资料弹窗 -->
@@ -106,9 +106,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import { getBannerList, userGet, userSet, loginWithWeixinCode } from '../../api/index.js'
+import { onMounted, ref } from 'vue'
+import { getBannerList, loginWithWeixinCode, userGet, userSet } from '../../api/index.js'
 import { resolveImageUrl } from '../../utils/imageHelper.js'
 
 const banners = ref([])
@@ -250,63 +250,82 @@ onMounted(() => {
 </script>
 
 <style lang="scss">
+@import '@/static/styles/variables.scss';
+
 .page {
   min-height: 100vh;
-  background-color: #f8f8f8;
-  padding: 0 30rpx;
+  background: linear-gradient(180deg, $bg-primary 0%, #FAF8F5 30%, #F5F3F0 70%, #F0EEE9 100%);
+  padding: 0 $space-lg;
   box-sizing: border-box;
+  position: relative;
+  
+  /* 顶部金色光晕装饰 */
+  &::before {
+    content: '';
+    position: fixed;
+    top: -100rpx;
+    right: -100rpx;
+    width: 400rpx;
+    height: 400rpx;
+    background: radial-gradient(circle, rgba(201, 168, 108, 0.12) 0%, rgba(201, 168, 108, 0.04) 40%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  /* 底部装饰性纹理 */
+  &::after {
+    content: '';
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 300rpx;
+    background: linear-gradient(to top, rgba(201, 168, 108, 0.03) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
 }
 
 .status-bar {
-  /* 适配状态栏高度，这里简单给个高度，实际可动态计算 */
-  height: var(--status-bar-height); 
+  height: var(--status-bar-height);
   width: 100%;
 }
 
-/* 用户头部 */
+/* ========== 用户头部 - 全新设计 ========== */
 .user-header {
   display: flex;
   align-items: center;
-  padding: 30rpx;
-  background-color: #fff;
-  border-radius: 20rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.03);
+  padding: $space-lg;
+  background: $bg-card;
+  border-radius: $radius-lg;
+  margin-bottom: $space-md;
+  box-shadow: $shadow-md;
 }
 
 .avatar {
   width: 100rpx;
   height: 100rpx;
   border-radius: 50%;
-  margin-right: 24rpx;
-  background-color: #eee;
-  border: 2rpx solid #fff;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
+  margin-right: $space-md;
+  background-color: $bg-secondary;
+  border: 4rpx solid $bg-card;
+  box-shadow: $shadow-sm;
+  transition: transform 0.3s ease;
 }
 
 .info-icon-wrapper {
   width: 100rpx;
   height: 100rpx;
   border-radius: 50%;
-  margin-right: 24rpx;
-  background-color: #f5f5f5;
+  margin-right: $space-md;
+  background: linear-gradient(135deg, $primary-light 0%, $primary 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2rpx solid #fff;
-}
-
-.info-icon {
-  font-size: 40rpx;
-  color: #cda274;
-  font-family: monospace;
-  font-weight: bold;
-  border: 2rpx solid #cda274;
-  border-radius: 50%;
-  width: 44rpx;
-  height: 44rpx;
-  line-height: 40rpx;
-  text-align: center;
+  border: 4rpx solid $bg-card;
+  box-shadow: $shadow-sm;
+  transition: transform 0.3s ease;
 }
 
 .user-info {
@@ -316,54 +335,74 @@ onMounted(() => {
 }
 
 .nickname {
-  font-size: 34rpx;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 8rpx;
+  font-size: $text-lg;
+  font-weight: $font-semibold;
+  color: $text-primary;
+  margin-bottom: $space-xs;
+  letter-spacing: 1rpx;
 }
 
 .welcome-text {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $text-sm;
+  color: $text-tertiary;
 }
 
 .login-btn {
   margin: 0;
-  padding: 0 30rpx;
-  height: 60rpx;
-  line-height: 60rpx;
-  background-color: #cda274; /* 金色主题 */
-  color: #fff;
-  font-size: 26rpx;
-  border-radius: 30rpx;
+  padding: 0 $space-lg;
+  height: 64rpx;
+  line-height: 64rpx;
+  background: $primary-gradient;
+  color: $text-white;
+  font-size: $text-base;
+  font-weight: $font-medium;
+  border-radius: $radius-full;
   border: none;
+  box-shadow: 0 4rpx 12rpx rgba(201, 168, 108, 0.3);
+  transition: all 0.2s ease;
   
   &::after {
     border: none;
   }
   
   &:active {
-    opacity: 0.9;
+    transform: scale(0.96);
+    box-shadow: 0 2rpx 8rpx rgba(201, 168, 108, 0.2);
   }
 }
 
-/* 轮播图 */
-  .banner-section {
-    width: 100%;
-    margin-bottom: 30rpx;
+/* ========== 轮播图 - 优化高度比例 ========== */
+.banner-section {
+  width: 100%;
+  margin-bottom: $space-lg;
+  
+  swiper {
+    height: 360rpx;  /* 从690rpx调整为360rpx，16:9比例更合适 */
+    border-radius: $radius-lg;
+    overflow: hidden;
+    box-shadow: $shadow-md;
     
-    swiper {
-      height: 690rpx;
-      border-radius: 20rpx;
-      overflow: hidden;
-      
-      .banner-image {
-        width: 100%;
-        height: 100%;
-        border-radius: 20rpx;
-      }
+    .banner-image {
+      width: 100%;
+      height: 100%;
+      border-radius: $radius-lg;
     }
   }
+  
+  /* 轮播指示器样式优化 */
+  .wx-swiper-dot {
+    width: 8rpx !important;
+    height: 8rpx !important;
+    background: rgba(255, 255, 255, 0.5) !important;
+    border-radius: 4rpx !important;
+    transition: all 0.3s ease;
+  }
+  
+  .wx-swiper-dot-active {
+    width: 24rpx !important;
+    background: $primary !important;
+  }
+}
 
 /* 弹窗样式 */
 .overlay {
@@ -469,55 +508,79 @@ onMounted(() => {
   padding: 10rpx;
 }
 
-/* 功能卡片 */
+/* ========== 功能卡片 - 全新设计 ========== */
 .action-section {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 40rpx;
+  margin-bottom: $space-xl;
+  gap: $space-md;
 }
 
 .action-card {
-  width: 48%;
-  background-color: #fff;
-  border-radius: 20rpx;
-  padding: 40rpx 0;
+  flex: 1;
+  background: $bg-card;
+  border-radius: $radius-lg;
+  padding: $space-xl 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.03);
-  transition: all 0.2s;
+  box-shadow: $shadow-md;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  
+  /* 顶部装饰线 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4rpx;
+    background: $primary-gradient;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
   
   &:active {
-    transform: scale(0.98);
+    transform: translateY(-4rpx);
+    box-shadow: $shadow-lg;
+    
+    &::before {
+      transform: scaleX(1);
+    }
   }
 }
 
 .icon-wrapper {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 30rpx;
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: $radius-full;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20rpx;
+  margin-bottom: $space-md;
+  position: relative;
+  
+  /* 内圈装饰 */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 8rpx;
+    border-radius: 50%;
+    border: 2rpx dashed rgba(255, 255, 255, 0.5);
+  }
 }
 
 .diy-icon-bg {
-  background-color: #fff8e1; /* 浅黄背景 */
+  background: linear-gradient(135deg, $secondary-light 0%, $secondary 100%);
+  box-shadow: 0 8rpx 24rpx rgba(139, 154, 124, 0.3);
 }
 
 .select-icon-bg {
-  background-color: #e3f2fd; /* 浅蓝背景 */
-}
-
-.card-icon {
-  width: 56rpx;
-  height: 56rpx;
-}
-
-.emoji-icon {
-  font-size: 48rpx;
+  background: linear-gradient(135deg, $accent-light 0%, $accent 100%);
+  box-shadow: 0 8rpx 24rpx rgba(212, 165, 165, 0.3);
 }
 
 .card-text {
@@ -527,27 +590,38 @@ onMounted(() => {
 }
 
 .card-title {
-  font-size: 30rpx;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 8rpx;
+  font-size: $text-md;
+  font-weight: $font-semibold;
+  color: $text-primary;
+  margin-bottom: $space-xs;
 }
 
 .card-subtitle {
-  font-size: 22rpx;
-  color: #999;
+  font-size: $text-sm;
+  color: $text-tertiary;
 }
 
-/* 底部 */
+/* ========== 底部 - 优化样式 ========== */
 .footer {
   width: 100%;
   text-align: center;
-  padding-bottom: 40rpx;
+  padding-bottom: $space-xl;
+  padding-top: $space-lg;
 }
 
 .footer-text {
-  font-size: 24rpx;
-  color: #ccc;
-  letter-spacing: 2rpx;
+  font-size: $text-sm;
+  color: $text-tertiary;
+  letter-spacing: 4rpx;
+  position: relative;
+  display: inline-block;
+  
+  /* 两侧装饰线 */
+  &::before,
+  &::after {
+    content: '·';
+    margin: 0 $space-sm;
+    color: $primary-light;
+  }
 }
 </style>

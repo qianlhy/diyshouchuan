@@ -2,13 +2,28 @@
   <view class="page">
     <!-- 未登录提示 -->
     <view v-if="!isLoggedIn" class="login-prompt">
-      <view class="icon">🔒</view>
+      <view class="icon">
+        <IconFont type="locked-filled" size="100" color="#fff"></IconFont>
+      </view>
       <view class="tip">请先登录查看购物车</view>
       <button class="login-btn" @click="goToLogin">去登录</button>
     </view>
     
     <template v-else>
-      <view v-if="!items.length" class="empty">购物车空空如也～</view>
+      <!-- 空状态 -->
+      <view v-if="!items.length" class="empty-state">
+        <view class="empty-content">
+          <view class="empty-icon-box">
+            <IconFont type="cart-filled" size="140" color="#C9A86C"></IconFont>
+            <view class="empty-circle"></view>
+          </view>
+          <text class="empty-title">购物车空空如也</text>
+          <text class="empty-desc">快去挑选心仪的手链吧～</text>
+          <button class="go-shopping-btn" @click="goShopping">
+            去逛逛
+          </button>
+        </view>
+      </view>
 
       <view v-else class="list">
       <view v-for="i in items" :key="i.id" class="row" :class="{updating: updating, deleting: deleting, 'diy-item': i.isDiy}">
@@ -34,9 +49,10 @@
       </view>
     </view>
 
-    <view v-if="isLoggedIn" class="bar">
+    <!-- 底部结算栏 - 仅在有商品时显示 -->
+    <view v-if="isLoggedIn && items.length > 0" class="bar">
       <view class="total">合计：<text class="money">¥{{ total }}</text></view>
-      <button class="checkout" :disabled="!items.length" @click="goCheckout">去结算</button>
+      <button class="checkout" @click="goCheckout">去结算</button>
     </view>
     </template>
   </view>
@@ -165,6 +181,11 @@ function goCheckout() {
   uni.navigateTo({ url: '/pages/order/confirm' })
 }
 
+// 去逛逛 - 跳转到首页
+function goShopping() {
+  uni.switchTab({ url: '/pages/index/index' })
+}
+
 async function apply(i) {
   if (updating.value) return
   
@@ -243,70 +264,419 @@ if (typeof window !== 'undefined') {
 }
 </script>
 
-<style>
-.page { padding-bottom: 160rpx; background: #f7f7f7; min-height: 100vh; box-sizing: border-box; }
+<style lang="scss">
+@import '@/static/styles/variables.scss';
 
-/* 登录提示样式 */
+.page { 
+  padding-bottom: 180rpx; 
+  background: linear-gradient(180deg, $bg-primary 0%, #FAF8F5 40%, #F8F6F3 100%);
+  min-height: 100vh; 
+  box-sizing: border-box;
+  position: relative;
+  
+  /* 顶部装饰光晕 */
+  &::before {
+    content: '';
+    position: fixed;
+    top: -150rpx;
+    left: -100rpx;
+    width: 400rpx;
+    height: 400rpx;
+    background: radial-gradient(circle, rgba(201, 168, 108, 0.1) 0%, rgba(201, 168, 108, 0.03) 50%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+/* ========== 登录提示样式 - 全新设计 ========== */
 .login-prompt {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 160rpx 48rpx;
+  padding: 200rpx 48rpx;
   min-height: 60vh;
 }
 .login-prompt .icon {
-  font-size: 120rpx;
-  margin-bottom: 32rpx;
-  opacity: 0.5;
+  width: 180rpx;
+  height: 180rpx;
+  background: linear-gradient(135deg, $primary-light 0%, $primary 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 48rpx;
+  box-shadow: 0 16rpx 48rpx rgba(201, 168, 108, 0.25);
+  position: relative;
+  
+  /* 内圈装饰 */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 16rpx;
+    border: 3rpx dashed rgba(255,255,255,0.4);
+    border-radius: 50%;
+  }
 }
 .login-prompt .tip {
-  font-size: 32rpx;
-  color: #666;
-  margin-bottom: 48rpx;
+  font-size: $text-lg;
+  color: $text-secondary;
+  margin-bottom: $space-xs;
+  font-weight: $font-medium;
+}
+.login-prompt .sub-tip {
+  font-size: $text-sm;
+  color: $text-tertiary;
+  margin-bottom: 64rpx;
 }
 .login-prompt .login-btn {
-  background: linear-gradient(135deg, #ffd93d, #ffcd00);
-  color: #333;
-  border-radius: 999rpx;
-  padding: 0 64rpx;
-  height: 88rpx;
-  line-height: 88rpx;
-  font-size: 32rpx;
-  font-weight: 600;
+  background: $primary-gradient;
+  color: $text-white;
+  border-radius: $radius-full;
+  padding: 0 80rpx;
+  height: 96rpx;
+  line-height: 96rpx;
+  font-size: $text-md;
+  font-weight: $font-semibold;
   border: none;
-  box-shadow: 0 8rpx 24rpx rgba(255,205,0,.3);
+  box-shadow: 0 8rpx 32rpx rgba(201, 168, 108, 0.4);
+  transition: all 0.2s ease;
+  
+  &:active {
+    transform: scale(0.96);
+    box-shadow: 0 4rpx 16rpx rgba(201, 168, 108, 0.3);
+  }
 }
 
-.empty { padding: 120rpx 24rpx; text-align: center; color: #999; }
-.list { padding: 24rpx; display: flex; flex-direction: column; gap: 16rpx; }
-.row { background: #ffffff; border-radius: 16rpx; padding: 16rpx; display: flex; gap: 16rpx; align-items: center; box-shadow: 0 6rpx 16rpx rgba(0,0,0,0.04); transition: all 0.3s ease; }
+/* ========== 空状态 - 精致设计 ========== */
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  padding: 0 48rpx;
+  position: relative;
+  
+  /* 装饰性背景圆 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500rpx;
+    height: 500rpx;
+    background: radial-gradient(circle, rgba(201, 168, 108, 0.06) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+}
+
+.empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.empty-icon-box {
+  position: relative;
+  width: 180rpx;
+  height: 180rpx;
+  margin-bottom: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-circle {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(201, 168, 108, 0.1) 0%, rgba(201, 168, 108, 0.02) 100%);
+  border: 2rpx dashed rgba(201, 168, 108, 0.2);
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  z-index: 1;
+  color: $primary;
+}
+
+.empty-title {
+  font-size: $text-lg;
+  color: $text-primary;
+  font-weight: $font-semibold;
+  margin-bottom: $space-sm;
+}
+
+.empty-desc {
+  font-size: $text-base;
+  color: $text-tertiary;
+  margin-bottom: 64rpx;
+}
+
+.go-shopping-btn {
+  background: $primary-gradient;
+  color: $text-white;
+  border-radius: $radius-full;
+  padding: 0 80rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  font-size: $text-md;
+  font-weight: $font-semibold;
+  border: none;
+  box-shadow: 0 8rpx 32rpx rgba(201, 168, 108, 0.35);
+  transition: all 0.2s ease;
+  
+  &:active {
+    transform: scale(0.96);
+    box-shadow: 0 4rpx 16rpx rgba(201, 168, 108, 0.25);
+  }
+}
+/* ========== 购物车列表 - 优化设计 ========== */
+.list { 
+  padding: $space-lg; 
+  display: flex; 
+  flex-direction: column; 
+  gap: $space-md; 
+}
+
+.row { 
+  background: $bg-card; 
+  border-radius: $radius-md; 
+  padding: $space-md; 
+  display: flex; 
+  gap: $space-md; 
+  align-items: center; 
+  box-shadow: $shadow-md; 
+  transition: all 0.3s ease;
+  border: 2rpx solid transparent;
+  
+  &:active {
+    box-shadow: $shadow-lg;
+    transform: translateY(-2rpx);
+  }
+}
+
 .row.updating { opacity: 0.6; }
 .row.deleting { opacity: 0.3; transform: translateX(-20rpx); }
-.thumb { width: 140rpx; height: 140rpx; background: #e9eef3; border-radius: 12rpx; overflow: hidden; position: relative; }
-.thumb-img { width: 100%; height: 100%; border-radius: 12rpx; }
-.meta { flex: 1; }
-.title { font-size: 28rpx; color: #333; }
-.price { color: #e54d42; font-weight: 700; margin-top: 4rpx; }
-.remove { width: 48rpx; height: 48rpx; line-height: 48rpx; text-align: center; border-radius: 50%; background: #f5f5f5; color: #999; cursor: pointer; transition: all 0.2s ease; }
-.remove:active { background: #e54d42; color: #fff; }
-.remove.disabled { opacity: 0.4; pointer-events: none; }
-.stepper { margin-top: 10rpx; display: flex; align-items: center; }
-.s-btn { width: 54rpx; height: 54rpx; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 10rpx; font-size: 32rpx; color: #333; cursor: pointer; transition: all 0.2s ease; }
-.s-btn:active { background: #ddd; }
-.s-btn.disabled { opacity: 0.4; pointer-events: none; }
-.ipt { width: 100rpx; margin: 0 10rpx; text-align: center; height: 54rpx; border: 2rpx solid #eee; border-radius: 10rpx; }
-.ipt:disabled { background: #f9f9f9; color: #999; }
 
-/* DIY商品样式 */
-.diy-item { background: linear-gradient(135deg, #fff9f0, #ffffff); border: 2rpx solid #ffe4c4; }
-.diy-badge { position: absolute; top: 8rpx; left: 8rpx; background: linear-gradient(135deg, #d4a574, #c9976c); color: #fff; font-size: 20rpx; padding: 4rpx 12rpx; border-radius: 8rpx; font-weight: 600; }
-.diy-info { margin-top: 10rpx; display: flex; flex-direction: column; gap: 4rpx; }
-.diy-quantity { font-size: 24rpx; color: #666; }
-.diy-size { font-size: 22rpx; color: #999; }
+.thumb { 
+  width: 160rpx; 
+  height: 160rpx; 
+  background: $bg-secondary; 
+  border-radius: $radius-sm; 
+  overflow: hidden; 
+  position: relative;
+  box-shadow: $shadow-sm;
+}
 
-.bar { position: fixed; left: 0; right: 0; bottom: 0; background: #ffffff; padding: 12rpx 24rpx calc(12rpx + env(safe-area-inset-bottom)); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -6rpx 12rpx rgba(0,0,0,0.04); }
-.total { color: #333; font-size: 28rpx; }
-.money { color: #e54d42; font-weight: 700; }
-.checkout { background: #ffd84c; color: #333; border-radius: 999rpx; padding: 0 28rpx; height: 72rpx; line-height: 72rpx; font-weight: 600; }
+.thumb-img { 
+  width: 100%; 
+  height: 100%; 
+  border-radius: $radius-sm; 
+}
+
+.meta { 
+  flex: 1; 
+  min-width: 0;
+}
+
+.title { 
+  font-size: $text-base; 
+  color: $text-primary; 
+  font-weight: $font-medium;
+  @include text-ellipsis;
+}
+
+.price { 
+  color: $error; 
+  font-weight: $font-bold; 
+  font-size: $text-md;
+  margin-top: $space-xs; 
+}
+
+.remove { 
+  width: 56rpx; 
+  height: 56rpx; 
+  line-height: 56rpx; 
+  text-align: center; 
+  border-radius: 50%; 
+  background: $bg-secondary; 
+  color: $text-tertiary; 
+  cursor: pointer; 
+  transition: all 0.2s ease;
+  font-size: 32rpx;
+  
+  &:active { 
+    background: $error; 
+    color: $text-white; 
+  }
+}
+
+.remove.disabled { 
+  opacity: 0.4; 
+  pointer-events: none; 
+}
+
+.stepper { 
+  margin-top: $space-sm; 
+  display: flex; 
+  align-items: center; 
+}
+
+.s-btn { 
+  width: 56rpx; 
+  height: 56rpx; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  background: $bg-secondary; 
+  border-radius: $radius-sm; 
+  font-size: 32rpx; 
+  color: $text-primary; 
+  cursor: pointer; 
+  transition: all 0.2s ease;
+  font-weight: $font-semibold;
+  
+  &:active { 
+    background: $primary-light; 
+    color: $primary-dark;
+  }
+}
+
+.s-btn.disabled { 
+  opacity: 0.4; 
+  pointer-events: none; 
+}
+
+.ipt { 
+  width: 80rpx; 
+  margin: 0 $space-sm; 
+  text-align: center; 
+  height: 56rpx; 
+  border: 2rpx solid $border-color; 
+  border-radius: $radius-sm; 
+  font-size: $text-base;
+  font-weight: $font-medium;
+  color: $text-primary;
+}
+
+.ipt:disabled { 
+  background: $bg-secondary; 
+  color: $text-tertiary; 
+}
+
+/* ========== DIY商品样式 - 优化设计 ========== */
+.diy-item { 
+  background: linear-gradient(135deg, #FFF9F5 0%, $bg-card 100%); 
+  border: 2rpx solid rgba(201, 168, 108, 0.3);
+  position: relative;
+  
+  /* 左侧装饰条 */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 20rpx;
+    bottom: 20rpx;
+    width: 6rpx;
+    background: $primary-gradient;
+    border-radius: 0 3rpx 3rpx 0;
+  }
+}
+
+.diy-badge { 
+  position: absolute; 
+  top: 12rpx; 
+  left: 12rpx; 
+  background: $primary-gradient; 
+  color: $text-white; 
+  font-size: 20rpx; 
+  padding: 6rpx 16rpx; 
+  border-radius: $radius-full; 
+  font-weight: $font-semibold;
+  box-shadow: $shadow-sm;
+  z-index: 1;
+}
+
+.diy-info { 
+  margin-top: $space-sm; 
+  display: flex; 
+  flex-direction: column; 
+  gap: $space-xs; 
+}
+
+.diy-quantity { 
+  font-size: $text-sm; 
+  color: $text-secondary; 
+}
+
+.diy-size { 
+  font-size: $text-sm; 
+  color: $primary-dark;
+  font-weight: $font-medium;
+  background: $primary-light;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-full;
+  display: inline-block;
+  width: fit-content;
+}
+
+/* ========== 底部结算栏 - 优化设计 ========== */
+.bar { 
+  position: fixed; 
+  left: 0; 
+  right: 0; 
+  bottom: 0; 
+  background: $bg-card; 
+  padding: $space-md $space-lg calc($space-md + env(safe-area-inset-bottom)); 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  box-shadow: 0 -8rpx 32rpx rgba(0,0,0,0.08);
+  z-index: 100;
+}
+
+.total { 
+  color: $text-primary; 
+  font-size: $text-base;
+  font-weight: $font-medium;
+}
+
+.money { 
+  color: $error; 
+  font-weight: $font-bold;
+  font-size: $text-lg;
+}
+
+.checkout { 
+  background: $primary-gradient; 
+  color: $text-white; 
+  border-radius: $radius-full; 
+  padding: 0 48rpx; 
+  height: 80rpx; 
+  line-height: 80rpx; 
+  font-weight: $font-semibold;
+  font-size: $text-md;
+  box-shadow: 0 8rpx 24rpx rgba(201, 168, 108, 0.35);
+  border: none;
+  transition: all 0.2s ease;
+  
+  &:active {
+    transform: scale(0.96);
+    box-shadow: 0 4rpx 16rpx rgba(201, 168, 108, 0.25);
+  }
+  
+  &[disabled] {
+    background: $bg-secondary;
+    color: $text-tertiary;
+    box-shadow: none;
+  }
+}
 </style>

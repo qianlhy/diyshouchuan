@@ -1,0 +1,265 @@
+/**
+ * 手串DIY小程序 - 全局动画与交互动效
+ * 
+ * 使用方式：
+ * 在页面style标签顶部引入：@import '@/static/styles/animations.scss';
+ * 或在App.vue中全局引入
+ */
+
+// ============================================
+// 基础过渡
+// ============================================
+.transition-fast { transition: all 0.15s ease; }
+.transition-base { transition: all 0.25s ease; }
+.transition-slow { transition: all 0.35s ease; }
+
+// ============================================
+// 点击反馈
+// ============================================
+.btn-feedback {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.card-feedback {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:active {
+    transform: translateY(-2rpx);
+  }
+}
+
+// ============================================
+// 淡入动画
+// ============================================
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in { animation: fadeIn 0.3s ease both; }
+.fade-in-up { animation: fadeInUp 0.4s ease both; }
+.fade-in-down { animation: fadeInDown 0.4s ease both; }
+
+// ============================================
+// 缩放动画
+// ============================================
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.scale-in { animation: scaleIn 0.3s ease both; }
+.pulse { animation: pulse 2s ease-in-out infinite; }
+
+// ============================================
+// 列表项依次进入动画
+// ============================================
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.list-item-animate {
+  animation: slideInUp 0.4s ease both;
+}
+
+// 为列表项生成延迟
+@for $i from 1 through 20 {
+  .list-item-animate:nth-child(#{$i}) {
+    animation-delay: #{$i * 0.05}s;
+  }
+}
+
+// ============================================
+// 加载动画
+// ============================================
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.spin { animation: spin 1s linear infinite; }
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+// ============================================
+// 弹跳动画
+// ============================================
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10rpx); }
+}
+
+.bounce { animation: bounce 0.6s ease infinite; }
+
+// ============================================
+// 震动动画（用于错误提示）
+// ============================================
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5rpx); }
+  20%, 40%, 60%, 80% { transform: translateX(5rpx); }
+}
+
+.shake { animation: shake 0.5s ease both; }
+
+// ============================================
+// 呼吸动画（用于角标提醒）
+// ============================================
+@keyframes breathe {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.breathe { animation: breathe 2s ease-in-out infinite; }
+
+// ============================================
+// 悬浮动画
+// ============================================
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10rpx); }
+}
+
+.float { animation: float 3s ease-in-out infinite; }
+
+// ============================================
+// 页面切换动画类
+// ============================================
+.page-enter {
+  animation: fadeInUp 0.3s ease both;
+}
+
+.page-leave {
+  animation: fadeInDown 0.2s ease both reverse;
+}
+
+// ============================================
+// 按钮悬浮效果
+// ============================================
+.btn-hover {
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease, height 0.4s ease;
+  }
+  
+  &:active::after {
+    width: 200%;
+    height: 200%;
+  }
+}
+
+// ============================================
+// 卡片悬浮效果
+// ============================================
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-4rpx);
+  }
+}
+
+// ============================================
+// 图标旋转效果
+// ============================================
+.icon-rotate {
+  transition: transform 0.3s ease;
+  
+  &:active {
+    transform: rotate(15deg);
+  }
+}
+
+// ============================================
+// 骨架屏动画
+// ============================================
+@keyframes skeleton {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton 1.5s ease-in-out infinite;
+}

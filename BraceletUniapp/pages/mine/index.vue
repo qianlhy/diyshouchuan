@@ -28,32 +28,40 @@
       
       <view class="order-grid">
         <view class="order-item" @click.stop="goOrders(0)">
-          <view class="icon-box bg-orange">
-            <text class="order-icon">💳</text>
+          <view class="icon-box bg-warm">
+            <view class="icon-inner">
+              <IconFont type="wallet-filled" size="48" color="#C9A86C"></IconFont>
+            </view>
             <view class="badge" v-if="count.s0">{{ count.s0 }}</view>
           </view>
           <text class="order-text">待支付</text>
         </view>
         
         <view class="order-item" @click.stop="goOrders(1)">
-          <view class="icon-box bg-green">
-            <text class="order-icon">📦</text>
+          <view class="icon-box bg-soft">
+            <view class="icon-inner">
+              <IconFont type="checkbox-filled" size="48" color="#8B9A7C"></IconFont>
+            </view>
             <view class="badge" v-if="count.s1">{{ count.s1 }}</view>
           </view>
           <text class="order-text">已支付</text>
         </view>
         
         <view class="order-item" @click.stop="goOrders(2)">
-          <view class="icon-box bg-blue">
-            <text class="order-icon">🚚</text>
+          <view class="icon-box bg-cool">
+            <view class="icon-inner">
+              <IconFont type="paperplane-filled" size="48" color="#7A9BA8"></IconFont>
+            </view>
             <view class="badge" v-if="count.s2">{{ count.s2 }}</view>
           </view>
           <text class="order-text">已发货</text>
         </view>
         
         <view class="order-item" @click.stop="goOrders(3)">
-          <view class="icon-box bg-yellow">
-            <text class="order-icon">✨</text>
+          <view class="icon-box bg-gold">
+            <view class="icon-inner">
+              <IconFont type="star-filled" size="48" color="#C9A86C"></IconFont>
+            </view>
             <view class="badge" v-if="count.s3">{{ count.s3 }}</view>
           </view>
           <text class="order-text">已完成</text>
@@ -66,7 +74,7 @@
       <!-- 地址管理 - 粉色 -->
       <view class="func-card card-pink" @click="goAddress">
         <view class="card-icon-box">
-          <text class="card-icon">📍</text>
+          <IconFont type="location-filled" size="56" color="#B8958A"></IconFont>
         </view>
         <text class="card-name">地址管理</text>
       </view>
@@ -74,7 +82,7 @@
       <!-- 联系客服 - 紫色 -->
       <view class="func-card card-purple" @click="contact">
         <view class="card-icon-box">
-          <text class="card-icon">🎧</text>
+          <IconFont type="staff-filled" size="56" color="#9B8AB8"></IconFont>
         </view>
         <text class="card-name">联系客服</text>
       </view>
@@ -82,7 +90,7 @@
       <!-- 设置 - 蓝色 -->
       <view class="func-card card-blue" @click="goSetting">
         <view class="card-icon-box">
-          <text class="card-icon">⚙️</text>
+          <IconFont type="settings-filled" size="56" color="#7A9BB8"></IconFont>
         </view>
         <text class="card-name">设置</text>
       </view>
@@ -90,7 +98,7 @@
       <!-- 关于我们 - 绿色 -->
       <view class="func-card card-green" @click="about">
         <view class="card-icon-box">
-          <text class="card-icon">ℹ️</text>
+          <IconFont type="info-filled" size="56" color="#7AB89B"></IconFont>
         </view>
         <text class="card-name">关于我们</text>
       </view>
@@ -104,7 +112,13 @@
     <view v-if="showQR" class="mask" @click="showQR=false">
       <view class="qr-modal" @click.stop>
         <view class="qr-title">客服微信</view>
-        <image class="qr" :src="qrUrl" mode="widthFix" show-menu-by-longpress="true" @click="previewQR" />
+        <view class="qr-box">
+          <image v-if="qrUrl" class="qr" :src="qrUrl" mode="widthFix" show-menu-by-longpress="true" @click="previewQR" />
+          <view v-else class="qr-placeholder">
+            <IconFont type="scan" size="96" color="#ccc"></IconFont>
+            <text class="qr-placeholder-text">请放入客服二维码图片\nstatic/CustomerService/qr.jpg</text>
+          </view>
+        </view>
         <view class="qr-tips">长按识别二维码添加</view>
         <button class="qr-close" @click="showQR=false">关闭</button>
       </view>
@@ -144,13 +158,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import { orderList, userGet, logout, loginWithWeixinCode } from '../../api/index.js'
+import { onMounted, ref } from 'vue'
+import { loginWithWeixinCode, logout, orderList, userGet } from '../../api/index.js'
 
 const count = ref({ s0: 0, s1: 0, s2: 0, s3: 0 })
 const showQR = ref(false)
-const qrUrl = '/static/CustomerService/714966e4f87775b79a26b9002c0606d1.jpg'
+const qrUrl = '/static/CustomerService/qr.jpg' // 请将客服二维码图片放到此路径
 const user = ref(null)
 const showEditProfile = ref(false)
 const tempAvatarUrl = ref('')
@@ -321,7 +335,8 @@ async function handleLogout() {
   })
 }
 function previewQR() {
-  try { uni.previewImage({ urls: [qrUrl] }) } catch (e) { uni.showToast({ title: '请先在 /static 放入二维码图片', icon: 'none' }) }
+  if (!qrUrl) { uni.showToast({ title: '请先放入二维码图片', icon: 'none' }); return; }
+  try { uni.previewImage({ urls: [qrUrl] }) } catch (e) { uni.showToast({ title: '预览失败', icon: 'none' }) }
 }
 
 // 打开编辑资料弹窗
@@ -383,38 +398,84 @@ function saveProfile() {
 }
 </script>
 
-<style>
+<style lang="scss">
+@import '@/static/styles/variables.scss';
+
 .page { 
-  padding: 24rpx; 
-  background: #f7f7f7; 
+  padding: $space-lg; 
+  background: linear-gradient(180deg, $bg-primary 0%, #FAF8F5 50%, #F8F6F3 100%);
   min-height: 100vh; 
-  box-sizing: border-box; 
+  box-sizing: border-box;
+  position: relative;
+  
+  /* 顶部装饰性光晕 */
+  &::before {
+    content: '';
+    position: fixed;
+    top: -200rpx;
+    right: -100rpx;
+    width: 400rpx;
+    height: 400rpx;
+    background: radial-gradient(circle, rgba(201, 168, 108, 0.08) 0%, transparent 60%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  /* 底部装饰性光晕 */
+  &::after {
+    content: '';
+    position: fixed;
+    bottom: -150rpx;
+    left: -80rpx;
+    width: 300rpx;
+    height: 300rpx;
+    background: radial-gradient(circle, rgba(139, 154, 124, 0.06) 0%, transparent 60%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
 }
 
-/* 顶部用户信息卡片 */
+/* ========== 顶部用户信息卡片 - 全新设计 ========== */
 .user-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #FFD347; /* 调整为更接近截图的黄色 */
-  border-radius: 20rpx;
-  padding: 30rpx 40rpx;
-  box-shadow: 0 8rpx 20rpx rgba(255, 211, 71, 0.2);
-  margin-bottom: 24rpx;
+  background: $primary-gradient;
+  border-radius: $radius-lg;
+  padding: $space-xl $space-xl;
+  box-shadow: 0 12rpx 40rpx rgba(201, 168, 108, 0.25);
+  margin-bottom: $space-lg;
+  position: relative;
+  overflow: hidden;
+  
+  /* 装饰性光晕 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300rpx;
+    height: 300rpx;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+    border-radius: 50%;
+  }
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 24rpx;
+  gap: $space-md;
 }
 
 .avatar {
-  width: 110rpx;
-  height: 110rpx;
-  background: #fff;
+  width: 120rpx;
+  height: 120rpx;
+  background: $bg-card;
   border-radius: 50%;
-  border: 4rpx solid rgba(255,255,255,0.3);
+  border: 4rpx solid rgba(255,255,255,0.5);
+  box-shadow: $shadow-md;
 }
 
 .text-info {
@@ -423,188 +484,267 @@ function saveProfile() {
 }
 
 .nickname {
-  font-size: 34rpx;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 8rpx;
+  font-size: $text-lg;
+  font-weight: $font-bold;
+  color: $text-primary;
+  margin-bottom: $space-xs;
+  text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.05);
 }
 
 .welcome {
-  font-size: 26rpx;
-  color: #5f4500;
+  font-size: $text-base;
+  color: rgba(0,0,0,0.6);
 }
 
 .edit-btn {
   margin: 0;
-  padding: 0 24rpx;
-  height: 56rpx;
-  line-height: 56rpx;
-  background: #fff;
-  color: #333;
-  font-size: 24rpx;
-  font-weight: 600;
-  border-radius: 28rpx;
+  padding: 0 $space-md;
+  height: 64rpx;
+  line-height: 64rpx;
+  background: rgba(255,255,255,0.95);
+  color: $primary-dark;
+  font-size: $text-base;
+  font-weight: $font-semibold;
+  border-radius: $radius-full;
   border: none;
-  box-shadow: 0 2rpx 6rpx rgba(0,0,0,0.05);
+  box-shadow: $shadow-sm;
+  transition: all 0.2s ease;
+  
+  &:active {
+    transform: scale(0.96);
+    background: $bg-card;
+  }
 }
 
-/* 面板通用样式 */
+/* ========== 面板通用样式 ========== */
 .panel {
-  background: #ffffff;
-  border-radius: 20rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.02);
-  margin-bottom: 24rpx;
-  padding: 24rpx;
+  background: $bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-md;
+  margin-bottom: $space-lg;
+  padding: $space-lg;
+  transition: box-shadow 0.3s ease;
 }
 
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24rpx;
-  padding: 0 8rpx;
+  margin-bottom: $space-lg;
+  padding: 0 $space-xs;
 }
 
 .panel-title {
-  font-size: 30rpx;
-  font-weight: 700;
-  color: #333;
+  font-size: $text-md;
+  font-weight: $font-bold;
+  color: $text-primary;
+  position: relative;
+  padding-left: $space-sm;
+  
+  /* 左侧装饰线 */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6rpx;
+    height: 28rpx;
+    background: $primary-gradient;
+    border-radius: 3rpx;
+  }
 }
 
 .panel-more {
   display: flex;
   align-items: center;
-  color: #999;
-  font-size: 24rpx;
-  gap: 4rpx;
+  color: $text-tertiary;
+  font-size: $text-sm;
+  gap: $space-xs;
+  transition: color 0.2s ease;
+  
+  &:active {
+    color: $primary;
+  }
 }
 
 .arrow {
-  font-size: 24rpx;
+  font-size: $text-sm;
+  color: $primary;
 }
 
-/* 订单网格 */
+/* ========== 订单网格 - 精致设计 ========== */
 .order-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20rpx;
+  gap: $space-md;
 }
 
 .order-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12rpx;
+  gap: $space-sm;
+  padding: $space-sm 0;
+  border-radius: $radius-md;
+  transition: all 0.2s ease;
+  
+  &:active {
+    background: $bg-hover;
+    transform: scale(0.98);
+  }
 }
 
 .icon-box {
-  width: 88rpx;
-  height: 88rpx;
-  border-radius: 50%;
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: $radius-full;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  background: $bg-card;
+  border: 2rpx solid $border-light;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.04);
+  transition: all 0.3s ease;
 }
 
-.order-icon {
-  font-size: 40rpx;
+.icon-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.bg-orange { background: #FFF4E5; color: #FF9800; }
-.bg-green { background: #E8F5E9; color: #4CAF50; }
-.bg-blue { background: #E3F2FD; color: #2196F3; }
-.bg-yellow { background: #FFF8E1; color: #FFC107; }
+/* 订单状态配色 - 极简精致风格 */
+.bg-warm { 
+  border-color: rgba(201, 168, 108, 0.4);
+  background: linear-gradient(135deg, rgba(201, 168, 108, 0.05) 0%, transparent 100%);
+}
+.bg-soft { 
+  border-color: rgba(139, 154, 124, 0.4);
+  background: linear-gradient(135deg, rgba(139, 154, 124, 0.05) 0%, transparent 100%);
+}
+.bg-cool { 
+  border-color: rgba(122, 155, 168, 0.4);
+  background: linear-gradient(135deg, rgba(122, 155, 168, 0.05) 0%, transparent 100%);
+}
+.bg-gold { 
+  border-color: rgba(201, 168, 108, 0.4);
+  background: linear-gradient(135deg, rgba(201, 168, 108, 0.05) 0%, transparent 100%);
+}
 
 .order-text {
-  font-size: 24rpx;
-  color: #333;
+  font-size: $text-sm;
+  color: $text-secondary;
+  font-weight: $font-medium;
+  letter-spacing: 1rpx;
 }
 
 .badge {
   position: absolute;
-  right: -6rpx;
-  top: -6rpx;
-  min-width: 32rpx;
-  height: 32rpx;
-  line-height: 32rpx;
+  right: -4rpx;
+  top: -4rpx;
+  min-width: 36rpx;
+  height: 36rpx;
+  line-height: 36rpx;
   text-align: center;
-  background: #ff4d4f;
-  color: #fff;
-  border-radius: 16rpx;
+  background: linear-gradient(135deg, #FF6B6B 0%, #EE5A6F 100%);
+  color: $text-white;
+  border-radius: $radius-full;
   font-size: 20rpx;
-  padding: 0 8rpx;
-  border: 2rpx solid #fff;
+  font-weight: $font-semibold;
+  padding: 0 10rpx;
+  border: 3rpx solid $bg-card;
+  box-shadow: $shadow-sm;
 }
 
-/* 功能卡片网格 */
+/* ========== 功能卡片网格 - 精致设计 ========== */
 .func-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24rpx;
-  margin-bottom: 30rpx;
+  gap: $space-md;
+  margin-bottom: $space-xl;
 }
 
 .func-card {
   height: 140rpx;
-  border-radius: 20rpx;
+  border-radius: $radius-md;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 12rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.03);
+  padding: 0 $space-lg;
+  gap: $space-md;
+  background: $bg-card;
+  border: 1rpx solid $border-light;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.04);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:active {
+    transform: translateY(-2rpx);
+    box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.08);
+    border-color: rgba(201, 168, 108, 0.2);
+  }
 }
 
-.card-pink { background: linear-gradient(135deg, #fff0f5, #ffe6eb); }
-.card-purple { background: linear-gradient(135deg, #f8f0ff, #efdfff); }
-.card-blue { background: linear-gradient(135deg, #f0f7ff, #e0efff); }
-.card-green { background: linear-gradient(135deg, #f0fff4, #dfffe7); }
+/* 左侧色条装饰 */
+.card-pink { border-left: 4rpx solid #D4B8A8; }
+.card-purple { border-left: 4rpx solid #B8A8C8; }
+.card-blue { border-left: 4rpx solid #A8B8C8; }
+.card-green { border-left: 4rpx solid #A8C8B8; }
 
 .card-icon-box {
-  width: 60rpx;
-  height: 60rpx;
+  width: 56rpx;
+  height: 56rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,0.6);
-  border-radius: 16rpx;
-}
-
-.card-icon {
-  font-size: 32rpx;
+  background: linear-gradient(135deg, $bg-secondary 0%, $bg-primary 100%);
+  border-radius: $radius-sm;
+  flex-shrink: 0;
+  box-shadow: inset 0 2rpx 4rpx rgba(0,0,0,0.03);
 }
 
 .card-name {
-  font-size: 26rpx;
-  color: #333;
-  font-weight: 500;
+  font-size: $text-base;
+  color: $text-primary;
+  font-weight: $font-medium;
 }
 
-/* 退出登录按钮 */
+/* ========== 退出登录按钮 ========== */
 .logout-section {
-  padding: 0 10rpx;
-  margin-bottom: 40rpx;
+  padding: 0 $space-xs;
+  margin-bottom: $space-xl;
 }
 
 .logout-btn {
   width: 100%;
-  height: 88rpx;
-  line-height: 88rpx;
-  background: #fff;
-  color: #FF5722;
-  font-size: 30rpx;
-  font-weight: 600;
-  border-radius: 16rpx;
+  height: 96rpx;
+  line-height: 96rpx;
+  background: $bg-card;
+  color: $error;
+  font-size: $text-md;
+  font-weight: $font-semibold;
+  border-radius: $radius-lg;
   border: none;
-  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.04);
+  box-shadow: $shadow-md;
+  transition: all 0.2s ease;
+  
+  &:active {
+    background: $error-light;
+    transform: scale(0.98);
+  }
 }
 
 /* 弹窗样式 */
 .mask { position: fixed; left: 0; right: 0; top: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
 .qr-modal { width: 80%; background: #fff; border-radius: 20rpx; padding: 24rpx; box-shadow: 0 10rpx 24rpx rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; }
 .qr-title { font-size: 30rpx; font-weight: 700; color: #333; margin-bottom: 10rpx; }
+.qr-box { display: flex; align-items: center; justify-content: center; }
 .qr { width: 520rpx; height: 520rpx; background: #e9eef3; border-radius: 12rpx; }
+.qr-placeholder { width: 520rpx; height: 520rpx; background: #f5f5f5; border-radius: 12rpx; border: 2rpx dashed #ddd; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.qr-placeholder-text { font-size: 24rpx; color: #bbb; text-align: center; margin-top: 16rpx; line-height: 1.6; }
 .qr-tips { color: #666; margin: 12rpx 0 4rpx; }
 .qr-close { margin-top: 6rpx; background: #ffd84c; color: #333; border-radius: 999rpx; padding: 0 28rpx; height: 72rpx; line-height: 72rpx; font-weight: 600; }
 

@@ -1,4 +1,10 @@
  {
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
+    }
+  },
   "pages": [
     {
       "path": "pages/index/index",
@@ -66,10 +72,10 @@
     }
   ],
   "tabBar": {
-    "color": "#666666",
-    "selectedColor": "#f5c93a",
-    "backgroundColor": "#ffffff",
-    "borderStyle": "black",
+    "color": "#9CA3AF",
+    "selectedColor": "#C9A86C",
+    "backgroundColor": "#FAFAF8",
+    "borderStyle": "white",
     "list": [
       { "pagePath": "pages/index/index", "text": "首页", "iconPath": "static/tabbar/home.png", "selectedIconPath": "static/tabbar/home_selected.png" },
       { "pagePath": "pages/design/index", "text": "制作台", "iconPath": "static/tabbar/design.png", "selectedIconPath": "static/tabbar/design_selected.png" },
@@ -79,7 +85,7 @@
   },
   "globalStyle": {
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "念初手作",
+    "navigationBarTitleText": "拾光手串",
     "navigationBarBackgroundColor": "#FFFFFF",
     "backgroundColor": "#FFFFFF"
   }

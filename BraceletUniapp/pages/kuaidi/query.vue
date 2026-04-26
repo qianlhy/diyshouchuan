@@ -79,7 +79,9 @@
 
     <!-- 空状态 -->
     <view class="empty-state" v-if="!kuaidiInfo && !loading && !errorMsg">
-      <image class="empty-icon" src="/static/images/empty.png" mode="aspectFit"></image>
+      <view class="empty-icon-wrap">
+        <uni-icons type="search" size="64" color="#ccc"></uni-icons>
+      </view>
       <text class="empty-text">输入快递单号查询物流信息</text>
     </view>
 
@@ -514,11 +516,14 @@ onMounted(() => {
   justify-content: center;
   padding: 100rpx 40rpx;
 
-  .empty-icon {
+  .empty-icon-wrap {
     width: 200rpx;
     height: 200rpx;
     margin-bottom: 30rpx;
     opacity: 0.5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .empty-text {

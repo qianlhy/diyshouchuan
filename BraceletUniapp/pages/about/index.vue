@@ -3,8 +3,8 @@
     <!-- 品牌头部 -->
     <view class="brand-header">
       <view class="logo">🔮</view>
-      <view class="brand-name">念初手作</view>
-      <view class="brand-slogan">天然水晶 · 念初定制</view>
+      <view class="brand-name">拾光手串</view>
+      <view class="brand-slogan">天然水晶 · 拾光定制</view>
       <view class="version">v1.0.0</view>
     </view>
 
@@ -77,7 +77,7 @@
 
     <!-- 版权信息 -->
     <view class="footer">
-      <view class="copyright">© 2025 念初手作</view>
+      <view class="copyright">© 2026 拾光手串</view>
       <view class="copyright">专注水晶手链定制</view>
     </view>
 
@@ -103,7 +103,7 @@
 import { ref } from 'vue'
 
 const showQR = ref(false)
-const qrUrl = '/static/CustomerService/714966e4f87775b79a26b9002c0606d1.jpg'
+const qrUrl = '/static/CustomerService/qr.jpg' // 请将客服二维码图片放到此路径
 
 function showQRCode() {
   showQR.value = true

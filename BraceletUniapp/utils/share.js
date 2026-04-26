@@ -22,7 +22,7 @@ export default {
     }
     
     // 默认标题
-    let title = '念初手作'
+    let title = '拾光手串'
     
     // 如果是来自于按钮的分享
     if (res.from === 'button') {
@@ -54,7 +54,7 @@ export default {
     }
     
     return {
-      title: '念初手作',
+      title: '拾光手串',
       query: query
     }
   }
