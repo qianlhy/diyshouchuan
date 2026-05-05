@@ -3,41 +3,47 @@
     <!-- 轮播图区域 -->
     <swiper class="gallery" circular :indicator-dots="bannerList.length > 1" :autoplay="true" :interval="4000" :duration="500">
       <swiper-item v-for="(img, index) in bannerList" :key="index">
-        <image class="img" :src="img" mode="aspectFill" @click="handlePreview(index)" />
+        <image class="gallery-img" :src="img" mode="aspectFill" @click="handlePreview(index)" />
       </swiper-item>
     </swiper>
 
-    <view class="info">
-      <view class="title">{{ detail.title }}</view>
-      <view class="price">¥{{ detail.price }}</view>
-      <view class="desc">{{ detail.description }}</view>
+    <!-- 商品信息 -->
+    <view class="info-card">
+      <view class="price-row">
+        <text class="price-symbol">¥</text>
+        <text class="price-value">{{ detail.price }}</text>
+      </view>
+      <view class="product-name">{{ detail.title }}</view>
+      <view class="product-desc" v-if="detail.description">{{ detail.description }}</view>
     </view>
 
-    <view class="qty-box">
-      <view class="label">数量</view>
-      <view class="stepper">
-        <view class="s-btn" @click="dec">-</view>
-        <input class="ipt" type="number" v-model.number="count" />
-        <view class="s-btn" @click="inc">+</view>
+    <!-- 数量选择 -->
+    <view class="qty-card">
+      <view class="qty-label">数量</view>
+      <view class="qty-stepper">
+        <view class="qty-btn" @click="dec">−</view>
+        <input class="qty-ipt" type="number" v-model.number="count" />
+        <view class="qty-btn" @click="inc">+</view>
       </view>
     </view>
 
-    <view class="space"></view>
+    <!-- 占位 -->
+    <view style="height: 20rpx;"></view>
 
+    <!-- 底部操作栏 -->
     <view class="action-bar">
-      <button class="btn ghost" @click="handleAdd">加入购物车</button>
-      <button class="btn primary" @click="buyNow">立即购买</button>
+      <button class="btn-cart" @click="handleAdd">加入购物车</button>
+      <button class="btn-buy" @click="buyNow">立即购买</button>
     </view>
   </view>
-  
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { productDetail, cartAdd, orderCreate } from '../../api/index.js'
 import { resolveImageUrl } from '../../utils/imageHelper.js'
-import { onLoad } from '@dcloudio/uni-app'
 import { updateCartBadge } from '../../utils/cartBadge.js'
+import { onLoad } from '@dcloudio/uni-app'
 
 const detail = ref(null)
 const product = ref(null)
@@ -48,7 +54,6 @@ const count = ref(1)
 function inc () { count.value = Number(count.value || 1) + 1 }
 function dec () { count.value = Math.max(1, Number(count.value || 1) - 1) }
 
-// 图片预览
 function handlePreview(current) {
   if (!bannerList.value || bannerList.value.length === 0) return
   uni.previewImage({
@@ -63,7 +68,6 @@ async function handleAdd() {
   try {
     await cartAdd(Number(pid), Number(count.value))
     uni.showToast({ title: '已加入购物车', icon: 'success' })
-    // 更新购物车角标
     updateCartBadge()
   } catch (e) {
     console.error('添加购物车失败:', e)
@@ -79,17 +83,13 @@ async function handleAdd() {
         }
       })
     } else {
-      uni.showToast({ 
-        title: e.msg || '添加失败，请重试', 
-        icon: 'none' 
-      })
+      uni.showToast({ title: e.msg || '添加失败，请重试', icon: 'none' })
     }
   }
 }
 
 async function buyNow() {
   try {
-    // 立即购买不经过购物车，直接跳转到确认页
     const item = {
         productId: product.value.id,
         title: product.value.title,
@@ -99,8 +99,6 @@ async function buyNow() {
         quantity: Number(count.value)
     }
     uni.setStorageSync('direct_buy_item', item)
-    
-    // 跳转到订单确认页，模式为直接购买
     uni.navigateTo({ url: '/pages/order/confirm?mode=direct' })
   } catch (e) {
     console.error('立即购买失败:', e)
@@ -114,33 +112,28 @@ onLoad(async (options) => {
   try {
     const res = await productDetail(Number(pid))
     product.value = res && res.product ? res.product : res
-    
-    // 处理图片URL
+
     if (product.value) {
       if (product.value.coverImage) {
         product.value.coverImage = resolveImageUrl(product.value.coverImage)
       }
-      
-      // 处理详情图
+
       let details = []
       if (product.value.detailImages) {
-        // 兼容可能是字符串的情况
-        details = Array.isArray(product.value.detailImages) 
-          ? product.value.detailImages 
+        details = Array.isArray(product.value.detailImages)
+          ? product.value.detailImages
           : (typeof product.value.detailImages === 'string' ? JSON.parse(product.value.detailImages) : [])
       }
-      
+
       const processedDetails = details.map(img => resolveImageUrl(img))
-      
-      // 构建轮播图数据 (封面图 + 详情图)
-      // 使用 Set 去重，防止详情图中包含封面图导致重复
+
       const images = new Set()
       if (product.value.coverImage) images.add(product.value.coverImage)
       processedDetails.forEach(img => images.add(img))
-      
+
       bannerList.value = Array.from(images).filter(Boolean)
     }
-    
+
     detail.value = product.value || null
   } catch (e) {
     console.error('获取详情失败', e)
@@ -148,22 +141,158 @@ onLoad(async (options) => {
 })
 </script>
 
-<style>
-.page { background: #f7f7f7; min-height: 100vh; padding-bottom: 140rpx; }
-.gallery { height: 460rpx; background: #e9eef3; }
-.img { width: 100%; height: 100%; }
-.info { background: #ffffff; border-radius: 0; padding: 24rpx; margin-top: 16rpx; }
-.title { font-size: 32rpx; font-weight: 700; color: #333; }
-.price { color: #e54d42; margin-top: 8rpx; font-size: 32rpx; font-weight: 700; }
-.desc { color: #666; line-height: 1.7; margin-top: 12rpx; }
-.qty-box { display: flex; justify-content: space-between; align-items: center; background: #ffffff; margin-top: 16rpx; padding: 16rpx 24rpx; }
-.label { color: #333; font-size: 28rpx; }
-.stepper { display: flex; align-items: center; }
-.s-btn { width: 64rpx; height: 64rpx; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 10rpx; font-size: 36rpx; color: #333; }
-.ipt { width: 120rpx; margin: 0 12rpx; text-align: center; height: 64rpx; border: 2rpx solid #eee; border-radius: 10rpx; }
-.space { height: 20rpx; }
-.action-bar { position: fixed; left: 0; right: 0; bottom: 0; background: #ffffff; padding: 12rpx 24rpx calc(12rpx + env(safe-area-inset-bottom)); display: flex; gap: 12rpx; box-shadow: 0 -6rpx 12rpx rgba(0,0,0,0.04); }
-.btn { flex: 1; height: 88rpx; line-height: 88rpx; border-radius: 44rpx; font-weight: 600; }
-.btn.ghost { background: #fffbe6; color: #a76a00; border: 2rpx solid #ffd84c; }
-.btn.primary { background: #ffd84c; color: #333; }
+<style lang="scss">
+@import '@/static/styles/variables.scss';
+
+.u-iconfont {
+  font-family: "uicon-iconfont";
+  text-decoration: none;
+  text-align: center;
+}
+
+.page {
+  background: $bg-primary;
+  min-height: 100vh;
+  padding-bottom: 140rpx;
+}
+
+/* ========== 轮播图 ========== */
+.gallery {
+  height: 460rpx;
+  background: $bg-secondary;
+}
+
+.gallery-img {
+  width: 100%;
+  height: 100%;
+}
+
+/* ========== 信息卡片 ========== */
+.info-card {
+  background: #ffffff;
+  padding: $space-lg;
+  margin: $space-sm 0;
+}
+
+.price-row {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: $space-sm;
+}
+
+.price-symbol {
+  font-size: $text-sm;
+  color: #D4B48C;
+  font-weight: $font-semibold;
+}
+
+.price-value {
+  font-size: $text-2xl;
+  color: #D4B48C;
+  font-weight: $font-bold;
+}
+
+.product-name {
+  font-size: $text-lg;
+  font-weight: $font-bold;
+  color: $text-primary;
+  line-height: 1.4;
+  margin-bottom: $space-xs;
+}
+
+.product-desc {
+  font-size: $text-sm;
+  color: $text-secondary;
+  line-height: 1.6;
+}
+
+/* ========== 数量选择 ========== */
+.qty-card {
+  background: #ffffff;
+  padding: $space-lg;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $space-sm;
+}
+
+.qty-label {
+  font-size: $text-base;
+  color: $text-primary;
+  font-weight: $font-medium;
+}
+
+.qty-stepper {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+}
+
+.qty-btn {
+  width: 64rpx;
+  height: 64rpx;
+  background: $bg-secondary;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  font-weight: $font-semibold;
+  color: $text-primary;
+  transition: all 0.2s;
+
+  &:active { background: #e8e0d5; }
+}
+
+.qty-ipt {
+  width: 100rpx;
+  height: 64rpx;
+  text-align: center;
+  background: $bg-secondary;
+  border: 1rpx solid #e8e0d5;
+  border-radius: $radius-md;
+  font-size: $text-base;
+  font-weight: $font-medium;
+  color: $text-primary;
+}
+
+/* ========== 底部操作栏 ========== */
+.action-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #ffffff;
+  padding: $space-sm $space-lg calc($space-sm + env(safe-area-inset-bottom));
+  display: flex;
+  gap: $space-sm;
+  box-shadow: 0 -4rpx 24rpx rgba(74, 55, 40, 0.06);
+  border-top: 1rpx solid #e8e0d5;
+  z-index: 100;
+}
+
+.btn-cart, .btn-buy {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: $radius-full;
+  font-size: $text-md;
+  font-weight: $font-semibold;
+  border: none;
+  margin: 0;
+
+  &::after { border: none; }
+}
+
+.btn-cart {
+  background: #ffffff;
+  color: #D4B48C;
+  border: 2rpx solid #D4B48C;
+}
+
+.btn-buy {
+  background: linear-gradient(135deg, #E8D5B8, #D4B48C);
+  color: #ffffff;
+  box-shadow: 0 8rpx 24rpx rgba(212, 180, 140, 0.25);
+}
 </style>

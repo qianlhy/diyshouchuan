@@ -35,10 +35,50 @@ function go(key) {
 }
 </script>
 
-<style>
-.tabbar { position: fixed; left: 0; right: 0; bottom: 0; height: 110rpx; background: #ffffff; border-top: 1px solid #eee; display: flex; align-items: center; justify-content: space-around; padding-bottom: env(safe-area-inset-bottom); z-index: 999; }
-.item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; font-size: 22rpx; }
-.item .icon { width: 46rpx; height: 46rpx; border-radius: 50%; background: #d8d8d8; margin-bottom: 6rpx; }
-.item.active { color: #f5c93a; }
-.item.active .icon { background: #f5c93a; }
+<style lang="scss">
+@import '@/static/styles/variables.scss';
+
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 108rpx;
+  background: #ffffff;
+  border-top: 1rpx solid #e8e0d5;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 999;
+}
+
+.item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #9a8b7a;
+  font-size: 20rpx;
+  transition: all 0.2s ease;
+  padding-top: 8rpx;
+
+  .icon {
+    width: 44rpx;
+    height: 44rpx;
+    border-radius: 50%;
+    background: #f0ebe3;
+    margin-bottom: 4rpx;
+    transition: all 0.2s ease;
+  }
+}
+
+.item.active {
+  color: #D4B48C;
+
+  .icon {
+    background: #f0e8d8;
+  }
+}
 </style>

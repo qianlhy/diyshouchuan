@@ -91,7 +91,7 @@ function clearCache() {
   uni.showModal({
     title: '清除缓存',
     content: '确定要清除缓存吗？这不会清除您的登录信息和购物车数据',
-    confirmColor: '#ffd84c',
+    confirmColor: '#D4B48C',
     success: (res) => {
       if (res.confirm) {
         uni.showLoading({ title: '清除中...' })
@@ -115,18 +115,16 @@ function checkUpdate() {
       title: '当前已是最新版本',
       content: '版本号：v1.0.0',
       showCancel: false,
-      confirmColor: '#ffd84c'
+      confirmColor: '#D4B48C'
     })
   }, 1000)
 }
-
-// 隐私政策
 function showPrivacy() {
   uni.showModal({
     title: '隐私政策',
     content: '我们非常重视您的隐私保护，详细政策请访问官网查看。',
     showCancel: false,
-    confirmColor: '#ffd84c'
+    confirmColor: '#D4B48C'
   })
 }
 
@@ -136,7 +134,7 @@ function showUserAgreement() {
     title: '用户协议',
     content: '使用本应用即表示您同意我们的用户协议，详细内容请访问官网查看。',
     showCancel: false,
-    confirmColor: '#ffd84c'
+    confirmColor: '#D4B48C'
   })
 }
 
@@ -151,7 +149,7 @@ function feedback() {
     title: '意见反馈',
     content: '感谢您的反馈！请通过客服微信联系我们。',
     confirmText: '联系客服',
-    confirmColor: '#ffd84c',
+    confirmColor: '#D4B48C',
     success: (res) => {
       if (res.confirm) {
         uni.navigateBack()
@@ -166,7 +164,7 @@ async function handleLogout() {
     title: '提示',
     content: '确定要退出登录吗？',
     confirmText: '退出',
-    confirmColor: '#ff6600',
+    confirmColor: '#D4B48C',
     success: async (res) => {
       if (res.confirm) {
         uni.showLoading({ title: '正在退出...' })
@@ -188,77 +186,91 @@ async function handleLogout() {
 }
 </script>
 
-<style scoped>
+<style lang="scss">
+@import '@/static/styles/variables.scss';
+
+.u-iconfont {
+  font-family: "uicon-iconfont";
+  text-decoration: none;
+  text-align: center;
+}
+
 .page {
   min-height: 100vh;
-  background: #f7f7f7;
-  padding-bottom: 24rpx;
+  background: $bg-primary;
+  padding-bottom: $space-lg;
 }
 
 .section {
-  background: #fff;
-  margin: 24rpx 24rpx 0;
-  border-radius: 16rpx;
+  background: $bg-card;
+  margin: $space-md $space-md 0;
+  border-radius: $radius-xl;
   overflow: hidden;
+  box-shadow: $shadow-sm;
+  border: 1rpx solid $border-light;
 }
 
 .section-title {
-  padding: 24rpx;
-  font-size: 28rpx;
-  font-weight: 700;
-  color: #333;
-  border-bottom: 1rpx solid #f5f5f5;
+  padding: $space-lg;
+  font-size: $text-base;
+  font-weight: $font-bold;
+  color: $text-primary;
+  border-bottom: 1rpx solid $border-light;
 }
 
 .item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24rpx;
-  border-bottom: 1rpx solid #f5f5f5;
-}
+  padding: $space-lg;
+  border-bottom: 1rpx solid $border-light;
+  transition: all 0.2s;
 
-.item:last-child {
-  border-bottom: none;
+  &:last-child { border-bottom: none; }
+  &:active { background: $bg-secondary; }
 }
 
 .item.arrow {
   position: relative;
-}
 
-.item.arrow::after {
-  content: '>';
-  position: absolute;
-  right: 24rpx;
-  font-size: 28rpx;
-  color: #ccc;
+  &::after {
+    content: '›';
+    position: absolute;
+    right: $space-lg;
+    font-size: $text-lg;
+    color: $text-tertiary;
+  }
 }
 
 .item-label {
-  font-size: 28rpx;
-  color: #333;
+  font-size: $text-base;
+  color: $text-primary;
+  font-weight: $font-medium;
 }
 
 .item-value {
-  font-size: 26rpx;
-  color: #999;
-  margin-right: 32rpx;
+  font-size: $text-sm;
+  color: $text-tertiary;
+  margin-right: 40rpx;
 }
 
 .logout-section {
-  margin: 48rpx 24rpx 0;
+  margin: $space-xl $space-md 0;
 }
 
 .logout-btn {
   width: 100%;
   height: 88rpx;
   line-height: 88rpx;
-  background: #fff;
-  color: #ff6600;
-  font-size: 28rpx;
-  font-weight: 600;
-  border-radius: 16rpx;
-  border: none;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);
+  background: $bg-card;
+  color: $error;
+  font-size: $text-md;
+  font-weight: $font-semibold;
+  border-radius: $radius-xl;
+  border: 1rpx solid $border-light;
+  box-shadow: $shadow-sm;
+
+  &::after { border: none; }
+  &:active { background: $error-light; transform: scale(0.98); }
 }
 </style>

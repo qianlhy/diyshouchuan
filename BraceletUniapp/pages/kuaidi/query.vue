@@ -80,7 +80,7 @@
     <!-- 空状态 -->
     <view class="empty-state" v-if="!kuaidiInfo && !loading && !errorMsg">
       <view class="empty-icon-wrap">
-        <uni-icons type="search" size="64" color="#ccc"></uni-icons>
+        <uni-icons type="search" size="64" color="$text-tertiary"></uni-icons>
       </view>
       <text class="empty-text">输入快递单号查询物流信息</text>
     </view>
@@ -252,49 +252,59 @@ onMounted(() => {
 })
 </script>
 
-<style lang="scss" scoped>
-.page {
-  min-height: 100vh;
-  background: #f5f5f5;
-  padding: 20rpx;
+<style lang="scss">
+@import '@/static/styles/variables.scss';
+
+.u-iconfont {
+  font-family: "uicon-iconfont";
+  text-decoration: none;
+  text-align: center;
 }
 
-// 搜索区域
+.page {
+  min-height: 100vh;
+  background: $bg-primary;
+  padding: $space-md;
+  padding-bottom: 180rpx;
+}
+
 .search-box {
   display: flex;
-  gap: 20rpx;
-  margin-bottom: 20rpx;
+  gap: $space-md;
+  margin-bottom: $space-md;
 
   .search-input-wrapper {
     flex: 1;
     position: relative;
-    background: #fff;
-    border-radius: 12rpx;
+    background: $bg-card;
+    border-radius: $radius-lg;
     display: flex;
     align-items: center;
+    border: 1rpx solid $border-light;
 
     .search-input {
       flex: 1;
       height: 80rpx;
-      padding: 0 80rpx 0 30rpx;
-      font-size: 28rpx;
+      padding: 0 80rpx 0 $space-lg;
+      font-size: $text-base;
+      color: $text-primary;
     }
 
     .clear-btn {
       position: absolute;
-      right: 20rpx;
+      right: $space-md;
       top: 50%;
       transform: translateY(-50%);
       width: 40rpx;
       height: 40rpx;
-      background: #ddd;
+      background: $bg-secondary;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
 
       .clear-icon {
-        color: #fff;
+        color: $text-tertiary;
         font-size: 28rpx;
         line-height: 1;
       }
@@ -305,35 +315,35 @@ onMounted(() => {
     width: 140rpx;
     height: 80rpx;
     line-height: 80rpx;
-    background: #f5c93a;
-    color: #333;
-    font-size: 28rpx;
-    border-radius: 12rpx;
+    background: $primary-gradient;
+    color: $text-white;
+    font-size: $text-base;
+    font-weight: $font-semibold;
+    border-radius: $radius-lg;
     margin: 0;
     padding: 0;
+    border: none;
+    box-shadow: 0 4rpx 16rpx rgba(212, 180, 140, 0.2);
 
-    &:disabled {
-      opacity: 0.6;
-    }
-
-    &:active {
-      opacity: 0.8;
-    }
+    &::after { border: none; }
+    &:disabled { opacity: 0.6; }
+    &:active { opacity: 0.8; }
   }
 }
 
-// 快递公司选择
 .company-section {
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 20rpx;
-  margin-bottom: 20rpx;
+  background: $bg-card;
+  border-radius: $radius-xl;
+  padding: $space-md;
+  margin-bottom: $space-md;
+  box-shadow: $shadow-sm;
+  border: 1rpx solid $border-light;
 
   .section-title {
-    font-size: 28rpx;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 20rpx;
+    font-size: $text-sm;
+    font-weight: $font-bold;
+    color: $text-secondary;
+    margin-bottom: $space-md;
   }
 
   .company-list {
@@ -341,36 +351,38 @@ onMounted(() => {
 
     .company-item {
       display: inline-block;
-      padding: 16rpx 30rpx;
-      margin-right: 16rpx;
-      background: #f5f5f5;
-      border-radius: 30rpx;
+      padding: $space-sm $space-md;
+      margin-right: $space-sm;
+      background: $bg-secondary;
+      border-radius: $radius-full;
       border: 2rpx solid transparent;
+      transition: all 0.2s;
 
       &.active {
-        background: #fff5d6;
-        border-color: #f5c93a;
+        background: $primary-gradient-light;
+        border-color: $primary-light;
       }
 
       .company-name {
-        font-size: 26rpx;
-        color: #666;
+        font-size: $text-xs;
+        color: $text-secondary;
       }
 
       &.active .company-name {
-        color: #333;
-        font-weight: bold;
+        color: $primary;
+        font-weight: $font-bold;
       }
     }
   }
 }
 
-// 状态卡片
 .status-card {
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
+  background: $bg-card;
+  border-radius: $radius-xl;
+  padding: $space-lg;
+  margin-bottom: $space-md;
+  box-shadow: $shadow-sm;
+  border: 1rpx solid $border-light;
 
   .status-header {
     display: flex;
@@ -383,23 +395,22 @@ onMounted(() => {
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 30rpx;
+      margin-right: $space-lg;
 
-      &.transit { background: #e6f7ff; }
-      &.pickup { background: #fff7e6; }
-      &.signed { background: #f6ffed; }
-      &.delivering { background: #fff2e8; }
-      &.returned { background: #fff1f0; }
+      &.transit { background: $info-light; }
+      &.pickup { background: $warning-light; }
+      &.signed { background: $success-light; }
+      &.delivering { background: $warning-light; }
+      &.returned { background: $error-light; }
 
       .icon-text {
         font-size: 40rpx;
         font-weight: bold;
-
-        .transit & { color: #1890ff; }
-        .pickup & { color: #faad14; }
-        .signed & { color: #52c41a; }
-        .delivering & { color: #fa8c16; }
-        .returned & { color: #ff4d4f; }
+        .transit & { color: $info; }
+        .pickup & { color: $warning; }
+        .signed & { color: $success; }
+        .delivering & { color: $warning; }
+        .returned & { color: $error; }
       }
     }
 
@@ -408,43 +419,44 @@ onMounted(() => {
 
       .status-text {
         display: block;
-        font-size: 36rpx;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 10rpx;
+        font-size: $text-lg;
+        font-weight: $font-bold;
+        color: $text-primary;
+        margin-bottom: $space-xs;
       }
 
       .company-text {
-        font-size: 26rpx;
-        color: #999;
+        font-size: $text-sm;
+        color: $text-tertiary;
       }
     }
   }
 }
 
-// 物流轨迹
 .timeline-section {
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 30rpx;
+  background: $bg-card;
+  border-radius: $radius-xl;
+  padding: $space-lg;
+  box-shadow: $shadow-sm;
+  border: 1rpx solid $border-light;
 
   .section-title {
-    font-size: 28rpx;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 30rpx;
+    font-size: $text-base;
+    font-weight: $font-bold;
+    color: $text-secondary;
+    margin-bottom: $space-lg;
   }
 
   .timeline {
     .timeline-item {
       display: flex;
-      padding-bottom: 40rpx;
+      padding-bottom: $space-xl;
       position: relative;
 
       &.first {
         .timeline-text {
-          color: #333;
-          font-weight: 500;
+          color: $text-primary;
+          font-weight: $font-medium;
         }
       }
 
@@ -455,15 +467,15 @@ onMounted(() => {
 
         .time-date {
           display: block;
-          font-size: 24rpx;
-          color: #999;
-          margin-bottom: 6rpx;
+          font-size: $text-xs;
+          color: $text-tertiary;
+          margin-bottom: 4rpx;
         }
 
         .time-hour {
           display: block;
-          font-size: 22rpx;
-          color: #bbb;
+          font-size: $text-xs;
+          color: $text-tertiary;
         }
       }
 
@@ -478,29 +490,29 @@ onMounted(() => {
           width: 20rpx;
           height: 20rpx;
           border-radius: 50%;
-          background: #ddd;
+          background: $border-light;
 
           &.active {
-            background: #f5c93a;
-            box-shadow: 0 0 0 8rpx rgba(245, 201, 58, 0.2);
+            background: $primary;
+            box-shadow: 0 0 0 8rpx rgba(196, 128, 106, 0.15);
           }
         }
 
         .timeline-connector {
           flex: 1;
           width: 2rpx;
-          background: #eee;
+          background: $border-light;
           margin-top: 10rpx;
         }
       }
 
       .timeline-content {
         flex: 1;
-        padding-left: 20rpx;
+        padding-left: $space-md;
 
         .timeline-text {
-          font-size: 28rpx;
-          color: #666;
+          font-size: $text-base;
+          color: $text-tertiary;
           line-height: 1.6;
         }
       }
@@ -508,18 +520,17 @@ onMounted(() => {
   }
 }
 
-// 空状态
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 100rpx 40rpx;
+  padding: 100rpx $space-lg;
 
   .empty-icon-wrap {
     width: 200rpx;
     height: 200rpx;
-    margin-bottom: 30rpx;
+    margin-bottom: $space-lg;
     opacity: 0.5;
     display: flex;
     align-items: center;
@@ -527,20 +538,19 @@ onMounted(() => {
   }
 
   .empty-text {
-    font-size: 28rpx;
-    color: #999;
+    font-size: $text-base;
+    color: $text-tertiary;
   }
 }
 
-// 错误状态
 .error-state {
   display: flex;
   justify-content: center;
-  padding: 100rpx 40rpx;
+  padding: 100rpx $space-lg;
 
   .error-text {
-    font-size: 28rpx;
-    color: #ff4d4f;
+    font-size: $text-base;
+    color: $error;
   }
 }
 </style>

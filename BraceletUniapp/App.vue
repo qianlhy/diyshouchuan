@@ -8,12 +8,16 @@ import { updateCartBadgeNow } from './utils/cartBadge.js'
 
 export default {
   onLaunch() {
-    // 应用启动时立即更新购物车角标
+    const splashWatched = uni.getStorageSync('splash_watched')
+    if (!splashWatched) {
+      uni.reLaunch({ url: '/pages/splash/index' })
+      return
+    }
+
     setTimeout(() => {
       updateCartBadgeNow()
     }, 500)
-    
-    // 应用启动时尝试自动登录
+
     checkAndAutoLogin().then((success) => {
       if (success) {
         console.log('[App] 自动登录成功')
@@ -21,10 +25,8 @@ export default {
     })
   },
   onShow() {
-    // 应用从后台进入前台时更新购物车角标
     updateCartBadgeNow()
-    
-    // 应用从后台进入前台时尝试自动登录
+
     checkAndAutoLogin().then((success) => {
       if (success) {
         console.log('[App] 自动登录成功')
@@ -38,6 +40,12 @@ export default {
 <style lang="scss">
 @import '@/static/styles/variables.scss';
 @import '@/static/styles/animations.scss';
+
+/* 加载 uView Plus 字体图标 */
+@font-face {
+  font-family: 'uicon-iconfont';
+  src: url('https://at.alicdn.com/t/font_2225171_8kdcwk4po24.ttf') format('truetype');
+}
 
 /* 全局页面样式 */
 page {

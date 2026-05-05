@@ -91,137 +91,132 @@ function goAddAddress() {
 }
 </script>
 
-<style scoped>
+<style lang="scss">
+@import '@/static/styles/variables.scss';
+
 .page {
   min-height: 100vh;
-  background: #f7f7f7;
-  padding-bottom: 140rpx;
+  background: $bg-primary;
+  padding-bottom: 160rpx;
 }
 
 .address-list {
-  padding: 24rpx;
+  padding: $space-md;
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  gap: $space-md;
 }
 
 .addr-item {
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 32rpx 24rpx;
+  background: $bg-card;
+  border-radius: $radius-xl;
+  padding: $space-lg;
   position: relative;
-  border: 2rpx solid transparent;
+  border: 2rpx solid $border-light;
   transition: all 0.3s;
+
+  &:active { background: $bg-secondary; }
 }
 
 .addr-item.selected {
-  border-color: #ffd84c;
-  background: #fffef5;
+  border-color: $primary;
+  background: $primary-gradient-light;
 }
 
 .addr-header {
   display: flex;
   align-items: center;
-  gap: 20rpx;
-  margin-bottom: 12rpx;
+  gap: $space-md;
+  margin-bottom: $space-sm;
 }
 
 .addr-name {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #333;
+  font-size: $text-md;
+  font-weight: $font-bold;
+  color: $text-primary;
 }
 
 .addr-phone {
-  font-size: 28rpx;
-  color: #666;
+  font-size: $text-sm;
+  color: $text-secondary;
 }
 
 .default-tag {
-  padding: 4rpx 12rpx;
-  background: #ffd84c;
-  color: #333;
-  font-size: 22rpx;
-  border-radius: 8rpx;
-  font-weight: 600;
+  padding: 4rpx 16rpx;
+  background: $primary-gradient;
+  color: $text-white;
+  font-size: $text-xs;
+  border-radius: $radius-md;
+  font-weight: $font-semibold;
 }
 
 .addr-detail {
-  font-size: 26rpx;
-  color: #999;
+  font-size: $text-sm;
+  color: $text-tertiary;
   line-height: 1.6;
-  padding-right: 60rpx;
+  padding-right: 80rpx;
 }
 
 .check-icon {
   position: absolute;
-  right: 24rpx;
+  right: $space-lg;
   top: 50%;
   transform: translateY(-50%);
-  width: 48rpx;
-  height: 48rpx;
+  width: 56rpx;
+  height: 56rpx;
   border-radius: 50%;
-  background: #ffd84c;
-  color: #333;
-  font-size: 32rpx;
-  font-weight: 700;
+  background: $primary-gradient;
+  color: $text-white;
+  font-size: $text-md;
+  font-weight: $font-bold;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* 空状态 */
 .empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 120rpx 24rpx;
+  padding: 120rpx $space-md;
 }
 
 .empty-icon {
   font-size: 120rpx;
-  margin-bottom: 24rpx;
+  margin-bottom: $space-lg;
 }
 
 .empty-text {
-  font-size: 28rpx;
-  color: #999;
-  margin-bottom: 48rpx;
+  font-size: $text-base;
+  color: $text-tertiary;
+  margin-bottom: $space-xl;
 }
 
-.empty .add-btn {
-  width: 400rpx;
-  height: 80rpx;
-  line-height: 80rpx;
-  background: linear-gradient(135deg, #ffd84c, #ffb84d);
-  color: #333;
-  font-size: 28rpx;
-  font-weight: 700;
-  border-radius: 40rpx;
-  border: none;
-}
-
-/* 底部添加按钮 */
 .bottom-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 24rpx;
-  background: #fff;
-  border-top: 2rpx solid #f0f0f0;
+  padding: $space-md $space-lg calc($space-md + env(safe-area-inset-bottom));
+  background: $bg-card;
+  border-top: 1rpx solid $border-light;
+  box-shadow: 0 -4rpx 24rpx rgba(0,0,0,0.06);
 }
 
-.bottom-bar .add-btn {
+.add-btn {
   width: 100%;
   height: 80rpx;
   line-height: 80rpx;
-  background: linear-gradient(135deg, #ffd84c, #ffb84d);
-  color: #333;
-  font-size: 28rpx;
-  font-weight: 700;
-  border-radius: 16rpx;
+  background: $primary-gradient;
+  color: $text-white;
+  font-size: $text-md;
+  font-weight: $font-semibold;
+  border-radius: $radius-xl;
   border: none;
+  box-shadow: 0 8rpx 24rpx rgba(212, 180, 140, 0.25);
+
+  &::after { border: none; }
+  &:active { transform: scale(0.98); }
 }
 </style>

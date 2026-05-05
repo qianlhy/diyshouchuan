@@ -88,36 +88,39 @@ function onImageError(e) {
 }
 </script>
 
-<style scoped>
-.customer-service-page {
+<style lang="scss">
+@import '@/static/styles/variables.scss';
+
+.page {
   min-height: 100vh;
-  background-color: #f7f7f7;
-  padding: 30rpx;
-  box-sizing: border-box;
+  background: $bg-primary;
+  padding: $space-lg;
+  padding-bottom: 180rpx;
 }
 
 .header {
-  margin-bottom: 40rpx;
+  margin-bottom: $space-xl;
   text-align: center;
 }
 
 .title {
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #333;
+  font-size: $text-xl;
+  font-weight: $font-bold;
+  color: $text-primary;
 }
 
 .content {
-  background: #fff;
-  border-radius: 20rpx;
-  padding: 60rpx 40rpx;
+  background: $bg-card;
+  border-radius: $radius-xl;
+  padding: $space-xl $space-lg;
   display: flex;
   flex-direction: column;
   align-items: center;
   min-height: 500rpx;
   justify-content: center;
-  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.05);
-  margin-bottom: 40rpx;
+  box-shadow: $shadow-sm;
+  border: 1rpx solid $border-light;
+  margin-bottom: $space-lg;
 }
 
 .qr-container {
@@ -129,57 +132,62 @@ function onImageError(e) {
 .qr-code {
   width: 400rpx;
   height: 400rpx;
-  margin-bottom: 30rpx;
+  margin-bottom: $space-lg;
+  border-radius: $radius-lg;
+  background: $bg-secondary;
 }
 
 .tip {
-  font-size: 28rpx;
-  color: #666;
+  font-size: $text-base;
+  color: $text-secondary;
+  text-align: center;
 }
 
 .empty {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16rpx;
+  gap: $space-md;
 }
 
 .empty-text {
-  font-size: 32rpx;
-  color: #333;
-  font-weight: 500;
+  font-size: $text-lg;
+  color: $text-primary;
+  font-weight: $font-medium;
 }
 
 .empty-tip {
-  font-size: 26rpx;
-  color: #999;
+  font-size: $text-sm;
+  color: $text-tertiary;
 }
 
 .loading {
-  color: #999;
-  font-size: 28rpx;
+  color: $text-tertiary;
+  font-size: $text-base;
 }
 
 .tips {
-  padding: 0 20rpx;
+  padding: 0;
 }
 
 .tip-item {
   display: flex;
   align-items: center;
-  margin-bottom: 24rpx;
-  background: #fff;
-  padding: 24rpx;
-  border-radius: 12rpx;
+  margin-bottom: $space-md;
+  background: $bg-card;
+  padding: $space-lg;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+  border: 1rpx solid $border-light;
 }
 
 .tip-icon {
   font-size: 40rpx;
-  margin-right: 20rpx;
+  margin-right: $space-md;
 }
 
 .tip-text {
-  font-size: 28rpx;
-  color: #555;
+  font-size: $text-base;
+  color: $text-secondary;
 }
 </style>

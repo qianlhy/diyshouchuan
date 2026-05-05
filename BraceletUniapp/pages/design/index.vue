@@ -151,7 +151,7 @@
         <!-- 搜索框 -->
         <view class="search-box" @click.stop="onSearchBoxClick">
           <view class="search-input-wrapper">
-            <text class="search-icon">🔍</text>
+            <text class="u-iconfont search-icon" style="font-size: 28rpx; color: $text-tertiary;">&#xe62a;</text>
             <input
               class="search-input"
               type="text"
@@ -264,7 +264,7 @@
       <view class="popup" @click.stop>
         <view class="popup-header">
           <text class="popup-title">选择手围</text>
-          <text class="popup-close" @click="showSizeSelector = false">✕</text>
+          <text class="u-iconfont popup-close" style="font-size: 32rpx; color: $text-tertiary;" @click="showSizeSelector = false">&#xe685;</text>
         </view>
         <view class="popup-body">
           <!-- 戴法选择 -->
@@ -325,7 +325,7 @@
       <view class="popup preview-popup" @click.stop>
         <view class="popup-header">
           <text class="popup-title">确认订单</text>
-          <text class="popup-close" @click="showOrderPreview = false">✕</text>
+          <text class="u-iconfont popup-close" style="font-size: 32rpx; color: $text-tertiary;" @click="showOrderPreview = false">&#xe685;</text>
         </view>
         <view class="preview-body">
           <view class="preview-meta">
@@ -378,22 +378,22 @@
     <view v-if="showHelpPopup" class="mask" @click="closeHelpPopup">
       <view class="popup help-popup" @click.stop>
         <view class="popup-header">
-          <view class="header-deco">✨</view>
+          <text class="u-iconfont header-deco" style="font-size: 36rpx; color: $primary;">&#xe669;</text>
           <text class="popup-title">操作指南</text>
-          <text class="popup-close" @click="closeHelpPopup">✕</text>
+          <text class="u-iconfont popup-close" style="font-size: 32rpx; color: $text-tertiary;" @click="closeHelpPopup">&#xe685;</text>
         </view>
         <view class="help-grid">
           <view class="help-item">
             <view class="help-icon-box">
               <view class="demo-bead"></view>
-              <view class="demo-hand">👆</view>
+              <text class="u-iconfont demo-hand" style="font-size: 40rpx; color: $primary;">&#xe62d;</text>
             </view>
             <text class="help-text">点击下方珠子添加</text>
           </view>
           <view class="help-item">
             <view class="help-icon-box">
               <view class="demo-circle"></view>
-              <view class="demo-drag-hand">👆</view>
+              <text class="u-iconfont demo-drag-hand" style="font-size: 40rpx; color: $info;">&#xe62a;</text>
             </view>
             <text class="help-text">长按拖动调整位置</text>
           </view>
@@ -438,10 +438,10 @@
       <view class="popup login-popup" @click.stop>
         <view class="popup-header">
           <text class="popup-title">提示</text>
-          <text class="popup-close" @click="closeLoginPopup">✕</text>
+          <text class="u-iconfont popup-close" style="font-size: 32rpx; color: $text-tertiary;" @click="closeLoginPopup">&#xe685;</text>
         </view>
         <view class="login-popup-body">
-          <view class="login-icon">🔒</view>
+          <text class="u-iconfont login-icon" style="font-size: 100rpx; color: $primary;">&#xe979;</text>
           <text class="login-tip">请先登录后再加入购物车</text>
         </view>
         <view class="login-popup-actions">
@@ -2246,11 +2246,50 @@ onShow(() => {
 <style lang="scss">
 @import '@/static/styles/variables.scss';
 
+/* uView Plus 字体图标 */
+.u-iconfont {
+  font-family: "uicon-iconfont";
+  text-decoration: none;
+  text-align: center;
+}
+
 .page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: $bg-primary;
+  position: relative;
+  
+  /* 背景图片层 */
+  &::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('/static/ack.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    opacity: 0.08;
+    z-index: -1;
+  }
+  
+  /* 渐变遮罩层 */
+  &::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg,
+      rgba(250, 247, 242, 0.95) 0%,
+      rgba(245, 240, 232, 0.92) 100%
+    );
+    z-index: -1;
+    pointer-events: none;
+  }
 }
 
 /* ========== 顶部 Header - 精致设计 ========== */
@@ -2666,7 +2705,7 @@ onShow(() => {
   right: 0;
   width: 400rpx;
   max-height: 600rpx;
-  background: #fff;
+  background: $bg-card;
   border-radius: 16rpx;
   box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
   z-index: 1000;
@@ -2681,7 +2720,7 @@ onShow(() => {
   display: flex;
   align-items: center;
   padding: 20rpx;
-  border-bottom: 1rpx solid #f5f5f5;
+  border-bottom: 1rpx solid $border-light;
   transition: background 0.2s;
 }
 
@@ -2697,7 +2736,7 @@ onShow(() => {
   width: 80rpx;
   height: 80rpx;
   border-radius: 12rpx;
-  background: #f5f5f5;
+  background: $bg-secondary;
   flex-shrink: 0;
 }
 
@@ -2719,7 +2758,7 @@ onShow(() => {
 
 .search-result-name {
   font-size: 28rpx;
-  color: #333;
+  color: $text-primary;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -2728,7 +2767,7 @@ onShow(() => {
 
 .search-result-category {
   font-size: 22rpx;
-  color: #999;
+  color: $text-tertiary;
   margin-top: 6rpx;
 }
 
@@ -2743,7 +2782,7 @@ onShow(() => {
   padding: 40rpx;
   text-align: center;
   font-size: 28rpx;
-  color: #999;
+  color: $text-tertiary;
 }
 
 .category-tabs {
@@ -2904,7 +2943,7 @@ onShow(() => {
       top: 8rpx;
       left: 8rpx;
       background: rgba(0,0,0,0.5);
-      color: #fff;
+      color: $text-white;
       font-size: 18rpx;
       padding: 4rpx 10rpx;
       border-radius: 20rpx;
@@ -2965,8 +3004,8 @@ onShow(() => {
   position: absolute;
   top: 0;
   right: 0;
-  background: #d4a574;
-  color: #fff;
+  background: #D4B48C;
+  color: $text-white;
   font-size: 20rpx;
   width: 30rpx;
   height: 30rpx;
@@ -3000,7 +3039,7 @@ onShow(() => {
   left: -9999rpx;
   width: 560rpx;
   height: 560rpx;
-  background: #fff;
+  background: $bg-card;
 }
 
 /* 弹窗通用 */
@@ -3015,7 +3054,7 @@ onShow(() => {
 }
 .popup {
   width: 85%;
-  background: #fff;
+  background: $bg-card;
   border-radius: 24rpx;
   overflow: hidden;
 }
@@ -3033,8 +3072,8 @@ onShow(() => {
   margin: 20rpx 28rpx 28rpx;
   height: 80rpx;
   line-height: 80rpx;
-  background: linear-gradient(135deg, #d4a574, #c9976c);
-  color: #fff;
+  background: linear-gradient(135deg, #E8D5B8, #D4B48C);
+  color: $text-white;
   font-size: 28rpx;
   font-weight: 600;
   border-radius: 40rpx;
@@ -3048,7 +3087,7 @@ onShow(() => {
 .section-label {
   display: block;
   font-size: 28rpx;
-  color: #333;
+  color: $text-primary;
   margin-bottom: 20rpx;
   font-weight: 500;
 }
@@ -3068,7 +3107,7 @@ onShow(() => {
 }
 .wear-style-opt.selected {
   background: #fdf8f3;
-  border-color: #d4a574;
+  border-color: #D4B48C;
 }
 .style-radio {
   width: 36rpx;
@@ -3082,13 +3121,13 @@ onShow(() => {
   flex-shrink: 0;
 }
 .wear-style-opt.selected .style-radio {
-  border-color: #d4a574;
+  border-color: #D4B48C;
 }
 .style-radio-inner {
   width: 20rpx;
   height: 20rpx;
   border-radius: 50%;
-  background: #d4a574;
+  background: #D4B48C;
 }
 .style-info {
   display: flex;
@@ -3097,12 +3136,12 @@ onShow(() => {
 .style-name {
   font-size: 30rpx;
   font-weight: 600;
-  color: #333;
+  color: $text-primary;
   margin-bottom: 6rpx;
 }
 .style-desc {
   font-size: 22rpx;
-  color: #999;
+  color: $text-tertiary;
 }
 
 /* 尺寸选择 */
@@ -3125,7 +3164,7 @@ onShow(() => {
   border: 2rpx solid transparent;
   transition: all 0.2s ease;
 }
-.size-opt.selected { background: #fdf8f3; border-color: #d4a574; }
+.size-opt.selected { background: #fdf8f3; border-color: #D4B48C; }
 .opt-num { font-size: 28rpx; font-weight: 600; color: #333; }
 .opt-unit { font-size: 18rpx; color: #999; margin-left: 2rpx; }
 
@@ -3164,7 +3203,7 @@ onShow(() => {
 }
 .pv-name { flex: 1; font-size: 26rpx; color: #333; }
 .pv-qty { font-size: 24rpx; color: #999; margin-right: 16rpx; }
-.pv-price { font-size: 26rpx; color: #d4a574; font-weight: 600; }
+.pv-price { font-size: 26rpx; color: #D4B48C; font-weight: 600; }
 .preview-total {
   display: flex;
   justify-content: space-between;
@@ -3173,9 +3212,9 @@ onShow(() => {
   border-top: 2rpx solid #f0f0f0;
   margin-top: 12rpx;
   font-size: 28rpx;
-  color: #333;
+  color: $text-primary;
 }
-.pv-total-num { font-size: 36rpx; color: #d4a574; font-weight: 700; }
+.pv-total-num { font-size: 36rpx; color: #D4B48C; font-weight: 700; }
 .preview-actions {
   display: flex;
   gap: 16rpx;
@@ -3190,8 +3229,8 @@ onShow(() => {
   font-weight: 600;
   border: none;
 }
-.act-cancel { background: #f5f5f5; color: #666; }
-.act-submit { background: linear-gradient(135deg, #d4a574, #c9976c); color: #fff; }
+.act-cancel { background: $bg-secondary; color: $text-secondary; }
+.act-submit { background: $primary-gradient; color: $text-white; box-shadow: 0 4rpx 16rpx rgba(196, 128, 106, 0.2); }
 
 /* 引导弹窗 */
 .guide-popup { text-align: center; padding: 40rpx 28rpx; }
@@ -3201,7 +3240,7 @@ onShow(() => {
 /* 操作指南弹窗 */
 .help-popup {
   width: 640rpx;
-  background: #fff;
+  background: $bg-card;
   border-radius: 32rpx;
   overflow: hidden;
 }
@@ -3239,7 +3278,7 @@ onShow(() => {
 
 .help-text {
   font-size: 24rpx;
-  color: #333;
+  color: $text-primary;
   text-align: center;
 }
 
@@ -3247,7 +3286,7 @@ onShow(() => {
 .demo-bead {
   width: 40rpx;
   height: 40rpx;
-  background: #e6c5a1;
+  background: #E8D5B8;
   border-radius: 50%;
   animation: demo-pop 1.5s infinite;
 }
@@ -3263,7 +3302,7 @@ onShow(() => {
 .demo-circle {
   width: 32rpx;
   height: 32rpx;
-  background: #e6c5a1;
+  background: #E8D5B8;
   border-radius: 50%;
   position: absolute;
 }
@@ -3277,7 +3316,7 @@ onShow(() => {
 .demo-bead-mirror {
   width: 40rpx;
   height: 40rpx;
-  background: linear-gradient(90deg, #e6c5a1 50%, #d4a574 50%);
+  background: linear-gradient(90deg, #E8D5B8 50%, #D4B48C 50%);
   border-radius: 50%;
   animation: demo-flip 2s infinite;
 }
@@ -3295,7 +3334,7 @@ onShow(() => {
 }
 
 .dt-dot.active {
-  background: #d4a574;
+  background: #D4B48C;
   animation: demo-blink 1.5s infinite;
 }
 
@@ -3349,7 +3388,7 @@ onShow(() => {
   width: 20rpx;
   height: 20rpx;
   border-radius: 50%;
-  background-color: #d4a574;
+  background-color: #D4B48C;
   opacity: 0.6;
 }
 
@@ -3387,8 +3426,8 @@ onShow(() => {
 }
 
 .checkbox.checked {
-  background: #d4a574;
-  border-color: #d4a574;
+  background: #D4B48C;
+  border-color: #D4B48C;
 }
 
 .checkbox.checked::after {
@@ -3405,15 +3444,15 @@ onShow(() => {
 
 .checkbox-label {
   font-size: 24rpx;
-  color: #999;
+  color: $text-tertiary;
 }
 
 .help-btn {
   margin: 0;
   height: 80rpx;
   line-height: 80rpx;
-  background: linear-gradient(135deg, #d4a574, #c9976c);
-  color: #fff;
+  background: linear-gradient(135deg, #E8D5B8, #D4B48C);
+  color: $text-white;
   font-size: 28rpx;
   font-weight: 600;
   border-radius: 40rpx;
@@ -3422,7 +3461,7 @@ onShow(() => {
 /* 登录提示弹窗 */
 .login-popup {
   width: 560rpx;
-  background: #fff;
+  background: $bg-card;
   border-radius: 24rpx;
   overflow: hidden;
 }
@@ -3440,7 +3479,7 @@ onShow(() => {
 .login-tip {
   display: block;
   font-size: 30rpx;
-  color: #333;
+  color: $text-primary;
   line-height: 1.5;
 }
 
@@ -3455,8 +3494,8 @@ onShow(() => {
   margin: 0;
   height: 80rpx;
   line-height: 80rpx;
-  background: #f5f5f5;
-  color: #666;
+  background: $bg-secondary;
+  color: $text-secondary;
   font-size: 28rpx;
   border-radius: 40rpx;
 }
@@ -3466,8 +3505,8 @@ onShow(() => {
   margin: 0;
   height: 80rpx;
   line-height: 80rpx;
-  background: linear-gradient(135deg, #d4a574, #c9976c);
-  color: #fff;
+  background: linear-gradient(135deg, #E8D5B8, #D4B48C);
+  color: $text-white;
   font-size: 28rpx;
   font-weight: 600;
   border-radius: 40rpx;
@@ -3480,7 +3519,7 @@ onShow(() => {
   align-items: center;
   justify-content: center;
   padding: 40rpx 0;
-  color: #999;
+  color: $text-tertiary;
   font-size: 26rpx;
 }
 
@@ -3488,7 +3527,7 @@ onShow(() => {
   width: 40rpx;
   height: 40rpx;
   border: 4rpx solid #f3f3f3;
-  border-top: 4rpx solid #d4a574;
+  border-top: 4rpx solid #D4B48C;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16rpx;
@@ -3502,7 +3541,7 @@ onShow(() => {
 .loading-more {
   text-align: center;
   padding: 20rpx 0;
-  color: #999;
+  color: $text-tertiary;
   font-size: 24rpx;
 }
 </style>

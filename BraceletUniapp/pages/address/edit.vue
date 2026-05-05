@@ -51,10 +51,10 @@
 
       <view class="form-item switch-item">
         <view class="label">设为默认地址</view>
-        <switch 
-          :checked="form.isDefault" 
+        <switch
+          :checked="form.isDefault"
           @change="handleDefaultChange"
-          color="#ffd84c"
+          color="#D4B48C"
         />
       </view>
     </view>
@@ -223,24 +223,34 @@ onLoad((options) => {
 })
 </script>
 
-<style scoped>
+<style lang="scss">
+@import '@/static/styles/variables.scss';
+
+.u-iconfont {
+  font-family: "uicon-iconfont";
+  text-decoration: none;
+  text-align: center;
+}
+
 .page {
   min-height: 100vh;
-  background: #f7f7f7;
-  padding: 24rpx;
+  background: $bg-primary;
+  padding: $space-md;
 }
 
 .form {
-  background: #fff;
-  border-radius: 16rpx;
+  background: $bg-card;
+  border-radius: $radius-xl;
   overflow: hidden;
+  box-shadow: $shadow-sm;
+  border: 1rpx solid $border-light;
 }
 
 .form-item {
   display: flex;
   align-items: center;
-  padding: 24rpx;
-  border-bottom: 1rpx solid #f5f5f5;
+  padding: $space-lg;
+  border-bottom: 1rpx solid $border-light;
 }
 
 .form-item.region {
@@ -251,29 +261,33 @@ onLoad((options) => {
   justify-content: space-between;
 }
 
+.form-item:last-child {
+  border-bottom: none;
+}
+
 .label {
   width: 160rpx;
-  font-size: 28rpx;
-  color: #333;
+  font-size: $text-base;
+  color: $text-primary;
   flex-shrink: 0;
+  font-weight: $font-medium;
 }
 
 .input {
   flex: 1;
-  font-size: 28rpx;
-  color: #333;
+  font-size: $text-base;
+  color: $text-primary;
 }
 
-.input.placeholder,
 .placeholder {
-  color: #ccc;
+  color: $text-tertiary;
 }
 
 .textarea {
   flex: 1;
   min-height: 120rpx;
-  font-size: 28rpx;
-  color: #333;
+  font-size: $text-base;
+  color: $text-primary;
 }
 
 .region-selector {
@@ -282,24 +296,28 @@ onLoad((options) => {
 }
 
 .arrow {
-  font-size: 28rpx;
-  color: #ccc;
-  margin-left: 16rpx;
+  font-size: $text-base;
+  color: $text-tertiary;
+  margin-left: $space-sm;
 }
 
 .btn-group {
-  margin-top: 48rpx;
+  margin-top: $space-xl;
 }
 
 .save-btn {
   width: 100%;
   height: 88rpx;
   line-height: 88rpx;
-  background: #ffd84c;
-  color: #333;
-  font-size: 32rpx;
-  font-weight: 700;
-  border-radius: 16rpx;
+  background: $primary-gradient;
+  color: $text-white;
+  font-size: $text-md;
+  font-weight: $font-semibold;
+  border-radius: $radius-xl;
   border: none;
+  box-shadow: 0 8rpx 24rpx rgba(212, 180, 140, 0.25);
+
+  &::after { border: none; }
+  &:active { transform: scale(0.98); }
 }
 </style>
