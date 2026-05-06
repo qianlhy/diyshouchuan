@@ -76,6 +76,22 @@
     {
       "path": "pages/kuaidi/query",
       "style": {"navigationBarTitleText": "快递查询"}
+    },
+    {
+      "path": "pages/template/list",
+      "style": {"navigationBarTitleText": "DIY模板"}
+    },
+    {
+      "path": "pages/admin/template",
+      "style": {"navigationBarTitleText": "模板管理"}
+    },
+    {
+      "path": "pages/login/index",
+      "style": {"navigationBarTitleText": "微信登录"}
+    },
+    {
+      "path": "pages/profile/edit",
+      "style": {"navigationBarTitleText": "编辑资料"}
     }
   ],
   "tabBar": {

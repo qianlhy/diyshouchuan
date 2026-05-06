@@ -292,6 +292,28 @@ INSERT INTO `diy_material` VALUES (50,'main_bead','main_bead__white','白水晶A
 UNLOCK TABLES;
 
 --
+-- Table structure for table `diy_template`
+--
+
+DROP TABLE IF EXISTS `diy_template`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `diy_template` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '模板ID',
+  `name` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '模板名称',
+  `description` text COLLATE utf8mb4_unicode_ci COMMENT '模板描述',
+  `thumbnail` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '缩略图地址',
+  `size` decimal(5,2) DEFAULT '16.00' COMMENT '手围大小（单位：cm）',
+  `beads_json` longtext COLLATE utf8mb4_unicode_ci COMMENT '珠子数据（JSON格式）',
+  `status` tinyint(4) DEFAULT '1' COMMENT '状态：1启用 0禁用',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='DIY模板表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `order`
 --
 

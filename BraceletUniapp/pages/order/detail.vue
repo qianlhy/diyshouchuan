@@ -1,685 +1,398 @@
 <template>
-  <view class="page">
-    <view v-if="loading" class="loading">加载中...</view>
-    <view v-else-if="!detail" class="empty">订单不存在</view>
-    <view v-else>
-    <!-- 头部状态 -->
-    <view class="card head">
-      <view class="status-chip" :class="'s'+(detail.status||0)">{{ statusText(detail.status) }}</view>
-      <view class="order-no">订单号 {{ detail.order_no || detail.orderNo || detail.id }}</view>
+  <view class="page" v-if="order">
+    <!-- 订单状态 -->
+    <view class="status-banner" :class="statusBannerClass">
+      <text class="status-icon">{{ statusIcon }}</text>
+      <text class="status-text">{{ statusText }}</text>
     </view>
 
-    <!-- 物流信息 -->
-    <view class="card tracking-card" v-if="detail.status === 2 && (detail.trackingNumber || detail.tracking_number)">
-       <view class="tracking-row">
-          <text class="label">快递单号</text>
-          <text class="value">{{ detail.trackingNumber || detail.tracking_number }}</text>
-          <view class="copy-tag" @click="copyText(detail.trackingNumber || detail.tracking_number)">复制</view>
-       </view>
-    </view>
-
-    <!-- 地址信息 -->
-    <view class="card address-card" v-if="detail.receiverName || detail.consignee || detail.name">
-      <view class="icon-box"><text class="icon">📍</text></view>
-      <view class="addr-info">
-        <view class="addr-header">
-          <text class="name">{{ detail.receiverName || detail.consignee || detail.name }}</text>
-          <text class="phone">{{ detail.receiverPhone || detail.phone || detail.mobile }}</text>
+    <!-- 收货地址 -->
+    <view class="section address-section" v-if="order.receiverName">
+      <view class="addr-row">
+        <view class="addr-icon-wrap">
+          <text class="u-iconfont" style="font-size: 28rpx; color: #ffffff;">&#xe64e;</text>
         </view>
-        <view class="addr-detail">
-          {{ getFullAddress(detail) }}
+        <view class="addr-text">
+          <view class="addr-name">{{ order.receiverName }} {{ order.receiverPhone }}</view>
+          <view class="addr-detail">{{ order.receiverProvince }} {{ order.receiverCity }} {{ order.receiverDistrict }} {{ order.receiverDetail }}</view>
         </view>
       </view>
     </view>
 
-    <!-- DIY 订单展示逻辑 -->
-    <template v-if="isDiyOrder(detail)">
-      <!-- 1. DIY作品展示 (作为主商品) -->
-      <view class="card product-card">
-        <view class="row diy-main-row">
-          <image :src="getDesignImage(detail)" mode="aspectFill" class="thumb" @click="previewDesign(getDesignImage(detail))" />
-          <view class="meta">
-            <view class="title">{{ getDisplayTitle(detail) }}</view>
-            <view class="sub" v-if="detail.description">规格：{{ detail.description }}</view>
-            <view class="price-row">
-              <text class="price">¥{{ detail.amount }}</text>
-              <text class="qty">x1</text>
-            </view>
+    <!-- 商品清单 -->
+    <view class="section">
+      <view class="goods-item" v-for="item in order.items" :key="item.id || item.productId">
+        <image v-if="item.imageUrl || item.image" :src="item.imageUrl || item.image" mode="aspectFill" class="goods-thumb" />
+        <view v-else class="goods-thumb" style="background: #F2EDE4;"></view>
+        <view class="goods-info">
+          <view class="goods-name">{{ item.title }}</view>
+          <view class="goods-price-row">
+            <text class="goods-price">¥{{ item.price }}</text>
+            <text class="goods-qty">x{{ item.quantity }}</text>
           </view>
         </view>
       </view>
+    </view>
 
-      <!-- 2. 使用材料列表 -->
-      <view class="card materials-card" v-if="displayMaterials.length > 0">
-        <view class="card-title">使用材料</view>
-        <view class="row" v-for="i in displayMaterials" :key="i.product_id || i.id">
-          <image v-if="getItemImage(i)" :src="getItemImage(i)" mode="aspectFill" class="material-thumb" />
-          <view class="meta">
-            <view class="title">{{ i.title || i.name || '未知材料' }}</view>
-            <view class="price-row">
-              <text class="price">¥{{ i.price }}</text>
-              <text class="qty">x{{ i.quantity }}</text>
-            </view>
-          </view>
-        </view>
+    <!-- 订单信息 -->
+    <view class="section info-section">
+      <view class="info-row">
+        <text class="info-label">订单编号</text>
+        <text class="info-value">{{ order.orderNo }}</text>
       </view>
-    </template>
-
-    <!-- 普通订单展示商品列表 -->
-    <view class="card items" v-else>
-      <view class="row" v-for="i in (detail.items || [])" :key="i.product_id || i.id">
-        <view class="thumb-box">
-          <image v-if="getItemImage(i)" :src="getItemImage(i)" mode="aspectFill" class="thumb" />
-        </view>
-        <view class="meta">
-          <view class="title">{{ i.title }}</view>
-          <view class="sub">¥{{ i.price }} × {{ i.quantity }}</view>
-        </view>
+      <view class="info-row">
+        <text class="info-label">下单时间</text>
+        <text class="info-value">{{ formatTime(order.createTime) }}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">商品金额</text>
+        <text class="info-value">¥{{ order.totalAmount }}</text>
+      </view>
+      <view class="info-row" v-if="order.shippingFee > 0">
+        <text class="info-label">运费</text>
+        <text class="info-value">¥{{ order.shippingFee }}</text>
+      </view>
+      <view class="info-row total-row">
+        <text class="info-label total-label">实付款</text>
+        <text class="info-value total-value">¥{{ (order.totalAmount + (order.shippingFee || 0)).toFixed(2) }}</text>
       </view>
     </view>
 
-    <!-- 金额汇总 -->
-    <view class="card summary">
-      <view class="line">
-        <text>商品金额</text>
-        <text>¥{{ goodsAmount }}</text>
-      </view>
-      <view class="line" v-if="shippingFee > 0">
-        <text>运费</text>
-        <text>¥{{ shippingFee }}</text>
-      </view>
-      <view class="line total">
-        <text>订单总金额</text>
-        <text class="amount">¥{{ totalAmount }}</text>
-      </view>
+    <!-- 底部操作 -->
+    <view class="bottom-bar" v-if="order.status === 0">
+      <view class="cancel-btn" @click="cancelOrder">取消订单</view>
+      <view class="pay-btn" @click="goPay">去支付</view>
     </view>
 
-    <!-- 物流信息按钮 -->
-    <view class="card service-tip" v-if="detail.trackingNumber || detail.tracking_number">
-      <view 
-        class="logistics-btn" 
-        @click="goToLogistics"
-      >
-        <text class="logistics-icon">🚚</text>
-        <text class="logistics-text">物流信息</text>
-      </view>
-    </view>
-
-    <!-- 底部操作栏 -->
-    <view class="bar">
-      <view class="total">应付：<text class="money">¥{{ totalAmount }}</text></view>
-      <view class="btn-group">
-        <button v-if="detail.status===0" class="btn cancel-btn" @click="handleCancelOrder">取消订单</button>
-        <button v-if="detail.status===0" class="btn pay-btn" @click="pay">去支付</button>
-        <button v-else-if="detail.status===1" class="btn cancel-btn" @click="handleRefund">申请退款</button>
-        <button v-else-if="detail.status===2" class="btn pay-btn" @click="confirmReceipt">确认收货</button>
-        <button v-else-if="detail.status===4" class="btn cancel-btn" @click="handleCancelRefund">取消退款</button>
-        <button v-else class="btn done-btn" disabled>{{ statusText(detail.status) }}</button>
-      </view>
-    </view>
+    <view class="bottom-bar" v-if="order.status === 2">
+      <view class="express-btn" @click="viewExpress">查看物流</view>
+      <view class="receive-btn" @click="confirmReceive">确认收货</view>
     </view>
   </view>
 </template>
 
 <script setup>
 import { onLoad } from '@dcloudio/uni-app'
-import { computed, ref } from 'vue'
-import { cancelOrder, cancelRefundOrder, completeOrder, orderDetail } from '../../api/index.js'
-import { STORAGE_TOKEN_KEY } from '../../config.js'
+import { ref } from 'vue'
+import { cancelOrder as apiCancelOrder, completeOrder, orderDetail } from '../../api/index.js'
 import { resolveImageUrl } from '../../utils/imageHelper.js'
-import { handleOrderPayment } from '../../utils/paymentHelper.js'
 
-const detail = ref(null)
-const loading = ref(true)
-let oid = ''
-
-// 判断是否是新疆、西藏地址
-const isRemoteArea = computed(() => {
-  if (!detail.value) return false
-  const province = detail.value.receiverProvince || ''
-  return province.includes('新疆') || province.includes('西藏')
-})
-
-// 运费
-const shippingFee = computed(() => {
-  return isRemoteArea.value ? 15 : 0
-})
-
-// 订单总金额（从数据库读取，已包含运费）
-const totalAmount = computed(() => {
-  if (!detail.value) return 0
-  return Number(detail.value.amount) || 0
-})
-
-// 商品金额（订单总金额 - 运费）
-const goodsAmount = computed(() => {
-  return totalAmount.value - shippingFee.value
-})
-
-// 计算显示的材料列表
-const displayMaterials = computed(() => {
-  if (!detail.value) return []
-  // 1. 优先使用 materials 字段
-  if (detail.value.materials && detail.value.materials.length > 0) return detail.value.materials
-  
-  // 2. 只有当 items 数量大于1时，才认为是包含了材料详情（排除只有一个主商品的情况）
-  //    或者当 items[0] 明显不是主商品（比如没有diyImage）
-  if (detail.value.items && detail.value.items.length > 0) {
-    if (detail.value.items.length > 1) return detail.value.items
-    
-    // 如果只有一个item，检查是否是主商品
-    const item = detail.value.items[0]
-    // 简单的判断：如果item的价格等于订单总价，那它可能是主商品，不应该在材料里显示
-    // 但为了安全，如果没materials字段，还是暂且认为items可能是材料（除非明确知道结构）
-    // 鉴于POST数据结构 items=[DIYProduct], materials=[Beads...]
-    // 如果后端没返回 materials，那可能就无法显示材料了。
-    // 这里我们保守一点：如果有materials用materials，没有则为空（避免把主商品当材料显示）
-    return []
-  }
-  return []
-})
-
-function statusText(s) {
-  // 与后端 Orders.java 保持一致：0待支付 1已支付 2已发货 3已完成 4退款中 5已退款 6已取消
-  const m = { 0: '待支付', 1: '已支付', 2: '已发货', 3: '已完成', 4: '退款中', 5: '已退款', 6: '已取消' }
-  return m[s] ?? s
+const order = ref(null)
+const STATUS_MAP = {
+  0: { text: '待支付', icon: '⏰', cls: 'status-wait' },
+  1: { text: '已支付，等待发货', icon: '✓', cls: 'status-paid' },
+  2: { text: '已发货，运输中', icon: '🚚', cls: 'status-shipped' },
+  3: { text: '已完成', icon: '✅', cls: 'status-done' },
+  4: { text: '已取消', icon: '✗', cls: 'status-cancel' },
 }
 
-const paying = ref(false)
-const confirming = ref(false)
-const cancelingRefund = ref(false)
+let statusText = ref('加载中...')
+let statusIcon = ref('')
+let statusBannerClass = ref('')
 
-function isDiyOrder(detail) {
-  if (!detail) return false
-  // 1. 有图片字段 (兼容多种命名)
-  if (detail.diyImage || detail.designImage || detail.diy_image || detail.design_image || detail.productImage || detail.product_image) return true
-  // 2. 订单号以DIY开头
-  const orderNo = String(detail.orderNo || detail.order_no || detail.id || '')
-  if (orderNo.toUpperCase().startsWith('DIY')) return true
-  return false
+function formatTime(time) {
+  if (!time) return '-'
+  const d = new Date(time)
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
 }
 
-function getDesignImage(detail) {
-  if (!detail) return ''
-  // 按照列表页的逻辑查找图片
-  let img = detail.diyImage || detail.designImage || detail.diy_image || detail.design_image || detail.productImage || detail.product_image || detail.image || detail.img || detail.pic
-  
-  // 如果都没有，尝试查找 items 里的图片
-  if (!img && detail.items && detail.items.length > 0) {
-      img = detail.items[0].productImage || detail.items[0].image || detail.items[0].imageUrl || detail.items[0].pic
-  }
-  
-  return resolveImageUrl(img ? String(img).trim() : '')
-}
-
-function getDisplayTitle(detail) {
-  if (!detail) return 'DIY作品'
-  
-  // 优先使用 items 中的 title (通常包含用户自定义名称或商品名称)
-  if (detail.items && detail.items.length > 0 && detail.items[0].title) {
-    return detail.items[0].title
-  }
-  
-  // 其次使用 diyName
-  if (detail.diyName) return detail.diyName
-  
-  return 'DIY作品'
-}
-
-function previewDesign(url) {
-  if (url) {
-    uni.previewImage({ urls: [url] })
-  }
-}
-
-function getItemImage(item) {
-  if (!item) return ''
-  const img = item.imageUrl || item.image || item.productImage || item.product_image || item.pic || ''
-  return resolveImageUrl(img ? String(img).trim() : '')
-}
-
-function copyText(text) {
-  if (!text) return
-  uni.setClipboardData({
-    data: String(text),
-    success: () => {
-      uni.showToast({ title: '复制成功', icon: 'none' })
+async function loadDetail(id) {
+  try {
+    const res = await orderDetail(Number(id))
+    order.value = res && res.order ? res.order : res
+    if (order.value) {
+      order.value.items = (order.value.items || []).map(item => ({
+        ...item,
+        imageUrl: resolveImageUrl(item.imageUrl || item.image),
+        image: resolveImageUrl(item.imageUrl || item.image)
+      }))
+      const s = STATUS_MAP[order.value.status] || STATUS_MAP[0]
+      statusText.value = s.text
+      statusIcon.value = s.icon
+      statusBannerClass.value = s.cls
     }
-  })
-}
-
-// 跳转到物流查询页面
-function goToLogistics() {
-  const trackingNum = detail.value.trackingNumber || detail.value.tracking_number
-  const phone = detail.value.receiverPhone || detail.value.receiver_phone || ''
-  if (!trackingNum) {
-    uni.showToast({ title: '暂无物流信息', icon: 'none' })
-    return
+  } catch(e) {
+    console.error('加载订单详情失败:', e)
   }
-  uni.navigateTo({
-    url: `/pages/kuaidi/query?num=${trackingNum}&phone=${phone}`
-  })
 }
 
-function getFullAddress(d) {
-  if (!d) return ''
-  if (d.receiverAddress) return d.receiverAddress
-  if (d.address) return d.address
-  
-  // 拼接地址，过滤掉无效值
-  const province = d.receiverProvince || d.province
-  const city = d.receiverCity || d.city
-  const district = d.receiverDistrict || d.district
-  const detail = d.receiverDetail || d.detailAddress || d.detail_address || d.addressDetail
-  
-  const parts = [province, city, district, detail]
-  const address = parts.filter(p => p && p !== 'null' && p !== 'undefined').join('')
-  
-  return address || '暂无详细地址'
-}
-
-async function handleCancelOrder() {
-  const orderId = detail.value.id || detail.value.orderId
-  if (!orderId) return
-
-  const res = await uni.showModal({
+async function cancelOrder() {
+  uni.showModal({
     title: '提示',
-    content: '确定要取消该订单吗？',
-    confirmColor: '#e54d42'
+    content: '确定取消该订单吗？',
+    confirmText: '取消订单',
+    confirmColor: '#D4836A',
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await apiCancelOrder(order.value.id)
+          uni.showToast({ title: '订单已取消', icon: 'success' })
+          setTimeout(() => { uni.navigateBack() }, 1500)
+        } catch(e) {
+          uni.showToast({ title: e.message || '取消失败', icon: 'none' })
+        }
+      }
+    }
   })
+}
 
-  if (res.confirm) {
-    uni.showLoading({ title: '处理中' })
-    try {
-      await cancelOrder(orderId)
-      uni.showToast({ title: '取消成功', icon: 'success' })
-      // 刷新数据
-      setTimeout(() => {
-        uni.navigateBack()
-      }, 1500)
-    } catch (e) {
-      uni.showToast({ title: '取消失败', icon: 'none' })
-    } finally {
+async function goPay() {
+  if (!order.value) return
+  
+  uni.showLoading({ title: '正在发起支付...', mask: true })
+  
+  try {
+    // 调用后端获取支付参数
+    const payRes = await orderPay(order.value.orderNo, 1) // 1=微信支付
+    console.log('支付参数:', payRes)
+    
+    if (!payRes || !payRes.nonceStr) {
       uni.hideLoading()
+      uni.showToast({ title: '获取支付信息失败', icon: 'none' })
+      return
     }
+    
+    // 调起微信支付
+    uni.requestPayment({
+      provider: 'wxpay',
+      timeStamp: payRes.timeStamp || String(Date.now()),
+      nonceStr: payRes.nonceStr,
+      package: payRes.packageValue || payRes.package,
+      signType: payRes.signType || 'RSA',
+      paySign: payRes.paySign,
+      success: (res) => {
+        uni.hideLoading()
+        uni.showToast({ title: '支付成功', icon: 'success' })
+        // 刷新订单状态
+        setTimeout(() => {
+          loadDetail(order.value.id)
+        }, 1500)
+      },
+      fail: (err) => {
+        uni.hideLoading()
+        console.error('支付失败:', err)
+        if (err.errCode === -2) {
+          uni.showToast({ title: '用户取消支付', icon: 'none' })
+        } else {
+          uni.showToast({ title: '支付失败', icon: 'none' })
+        }
+      }
+    })
+  } catch (e) {
+    uni.hideLoading()
+    console.error('发起支付失败:', e)
+    uni.showToast({ title: e.message || '支付失败', icon: 'none' })
   }
 }
 
-async function confirmReceipt() {
-  if (confirming.value) return
-  
-  try {
-    const result = await uni.showModal({
-      title: '确认收货',
-      content: '确认已收到商品吗？',
-      confirmText: '确认',
-      cancelText: '取消'
-    })
-    
-    if (!result.confirm) return
-    
-    confirming.value = true
-    uni.showLoading({ title: '处理中...', mask: true })
-    
-    const orderId = detail.value.id || detail.value.orderId
-    await completeOrder(orderId)
-    
-    uni.hideLoading()
-    uni.showToast({ 
-      title: '确认收货成功', 
-      icon: 'success',
-      duration: 2000
-    })
-    
-    // 更新本地订单状态
-    if (detail.value) {
-      detail.value.status = 3
-    }
-    
-    // 延迟跳转
-    setTimeout(() => {
-      uni.redirectTo({ 
-        url: '/pages/order/list',
-        fail: () => {
-          uni.navigateBack()
-        }
-      })
-    }, 2000)
-    
-  } catch (error) {
-    uni.hideLoading()
-    console.error('确认收货失败：', error)
-    uni.showToast({ 
-      title: error.message || '确认收货失败', 
-      icon: 'none',
-      duration: 2000
-    })
-  } finally {
-    confirming.value = false
-  }
+function viewExpress() {
+  uni.navigateTo({ url: `/pages/kuaidi/query?orderId=${order.value.id}` })
 }
 
-async function pay() {
-  if (paying.value) return
-  
-  paying.value = true
-  
-  await handleOrderPayment(detail.value, () => {
-    // 支付成功回调
-    
-    // 更新本地订单状态
-    if (detail.value) {
-      detail.value.status = 1
-      detail.value.payTime = new Date().toISOString()
-    }
-    
-    // 延迟跳转，等待后端状态完全更新
-    setTimeout(() => {
-      // 跳转到订单列表页，会自动触发刷新
-      uni.redirectTo({ 
-        url: '/pages/order/list',
-        fail: () => {
-          // 如果跳转失败，尝试返回
-          uni.navigateBack()
+async function confirmReceive() {
+  uni.showModal({
+    title: '提示',
+    content: '确认已收到货物吗？',
+    confirmText: '确认收货',
+    confirmColor: '#D4B48C',
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await completeOrder(order.value.id)
+          uni.showToast({ title: '已确认收货', icon: 'success' })
+          loadDetail(order.value.id)
+        } catch(e) {
+          uni.showToast({ title: '操作失败', icon: 'none' })
         }
-      })
-    }, 2000)
-  }, () => {
-    // 支付失败回调
-  }).finally(() => {
-    paying.value = false
+      }
+    }
   })
 }
 
-async function handleCancelRefund() {
-  if (cancelingRefund.value) return
-
-  try {
-    const result = await uni.showModal({
-      title: '提示',
-      content: '确定取消退款申请吗？取消后订单将恢复为已支付状态',
-      confirmText: '确定',
-      cancelText: '再想想',
-      confirmColor: '#e54d42'
-    })
-
-    if (!result.confirm) return
-
-    cancelingRefund.value = true
-    uni.showLoading({ title: '处理中...', mask: true })
-
-    const orderId = detail.value.id || detail.value.orderId
-    await cancelRefundOrder(orderId)
-
-    uni.hideLoading()
-    uni.showToast({
-      title: '取消退款成功',
-      icon: 'success',
-      duration: 2000
-    })
-
-    // 更新本地订单状态
-    if (detail.value) {
-      detail.value.status = 1 // 恢复为已支付
-    }
-
-    // 延迟刷新
-    setTimeout(() => {
-      uni.redirectTo({
-        url: '/pages/order/list',
-        fail: () => {
-          uni.navigateBack()
-        }
-      })
-    }, 2000)
-
-  } catch (error) {
-    uni.hideLoading()
-    console.error('取消退款失败：', error)
-    uni.showToast({
-      title: error.message || '取消退款失败',
-      icon: 'none',
-      duration: 2000
-    })
-  } finally {
-    cancelingRefund.value = false
-  }
-}
-
-async function handleRefund() {
-  try {
-    const result = await uni.showModal({
-      title: '申请退款',
-      content: '确定要申请退款吗？申请后需要等待管理员审核',
-      confirmText: '确定',
-      cancelText: '取消',
-      confirmColor: '#e54d42'
-    })
-
-    if (!result.confirm) return
-
-    uni.showLoading({ title: '处理中...', mask: true })
-
-    const orderId = detail.value.id || detail.value.orderId
-    await refundOrder(orderId)
-
-    uni.hideLoading()
-    uni.showToast({
-      title: '申请退款成功',
-      icon: 'success',
-      duration: 2000
-    })
-
-    // 更新本地订单状态为退款中
-    if (detail.value) {
-      detail.value.status = 4
-    }
-
-    // 延迟刷新
-    setTimeout(() => {
-      uni.redirectTo({
-        url: '/pages/order/list',
-        fail: () => {
-          uni.navigateBack()
-        }
-      })
-    }, 2000)
-
-  } catch (error) {
-    uni.hideLoading()
-    console.error('申请退款失败：', error)
-    uni.showToast({
-      title: error.message || '申请退款失败',
-      icon: 'none',
-      duration: 2000
-    })
-  }
-}
-
-onLoad(async (options) => {
-  const token = uni.getStorageSync(STORAGE_TOKEN_KEY)
-  if (!token) {
-    uni.showToast({ title: '请先登录', icon: 'none' })
-    setTimeout(() => {
-      uni.reLaunch({ url: '/pages/index/index' })
-    }, 800)
-    return
-  }
-
-  // 获取订单ID，支持多种参数名
-  oid = options?.id || options?.orderId || ''
-  
-  console.log('📋 接收到的参数:', options)
-  console.log('📋 订单ID:', oid, '类型:', typeof oid)
-  
-  // 验证订单ID是否有效
-  if (!oid && oid !== 0) {
-    loading.value = false
-    uni.showModal({
-      title: '提示',
-      content: '订单ID无效，请返回重试',
-      showCancel: false,
-      success: () => {
-        uni.navigateBack()
-      }
-    })
-    return
-  }
-  
-  // 先显示加载状态，避免阻塞渲染
-  loading.value = true
-  
-  // 延迟加载数据，让页面先渲染
-  setTimeout(async () => {
-    try {
-      const orderIdNum = Number(oid)
-      
-      // 再次验证转换后的数字是否有效
-      if (isNaN(orderIdNum) || orderIdNum <= 0) {
-        throw new Error('订单ID格式错误')
-      }
-      
-      const res = await orderDetail(orderIdNum)
-      console.log('📦 订单详情API返回:', res)
-      
-      // 处理后端返回的数据格式
-      if (res && res.order) {
-        detail.value = res.order
-        // 尝试从外层获取items补充到order中 (如果items在order外部)
-        if (!detail.value.items && res.items) {
-           detail.value.items = res.items
-        }
-      } else if (res && res.data) {
-        detail.value = res.data
-      } else if (res && !res.code && !res.msg) {
-        // 假设res是数据本身
-        detail.value = res
-      } else {
-        // 数据无效
-        console.warn('收到无效的订单数据:', res)
-        detail.value = null
-        if (res.msg) {
-          uni.showToast({ title: res.msg, icon: 'none' })
-        }
-      }
-      
-      // 兼容 orderItems (API文档中定义的名称) 到 items (页面使用的名称)
-      if (detail.value && !detail.value.items && detail.value.orderItems) {
-        detail.value.items = detail.value.orderItems
-      }
-
-      console.log('📋 订单详情:', detail.value)
-    } catch (e) {
-      console.error('❌ 加载订单失败', e)
-      uni.showToast({ title: '加载失败', icon: 'none' })
-    } finally {
-      loading.value = false
-    }
-  }, 50)
+onLoad((options) => {
+  const id = options && options.id ? options.id : ''
+  if (id) loadDetail(id)
 })
 </script>
 
-<style>
-.page { padding: 24rpx; background: #f7f7f7; min-height: 100vh; box-sizing: border-box; padding-bottom: calc(140rpx + env(safe-area-inset-bottom)); }
-.card { background: #ffffff; border-radius: 16rpx; padding: 24rpx; box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.04); margin-bottom: 20rpx; }
-.head { display: flex; justify-content: space-between; align-items: center; }
-.status-chip { padding: 6rpx 20rpx; border-radius: 999rpx; font-size: 24rpx; font-weight: 500; }
-.status-chip.s0 { background: #fff8e1; color: #ffb300; } /* 待支付 - 黄色 */
-.status-chip.s1 { background: #e8f5e9; color: #2e7d32; } /* 已支付 - 绿色 */
-.status-chip.s2 { background: #e3f2fd; color: #1565c0; } /* 已发货 - 蓝色 */
-.status-chip.s3 { background: #f3e5f5; color: #7b1fa2; } /* 已完成 - 紫色 */
+<style lang="scss">
+@import '@/static/styles/variables.scss';
 
-.tracking-card { padding: 20rpx 24rpx; }
-.tracking-row { display: flex; align-items: center; font-size: 28rpx; color: #333; }
-.tracking-row .label { color: #666; margin-right: 16rpx; }
-.tracking-row .value { flex: 1; font-family: monospace; font-size: 30rpx; }
-.tracking-row .copy-tag { color: #1565c0; margin-left: 16rpx; padding: 6rpx 20rpx; background: #e3f2fd; border-radius: 8rpx; font-size: 24rpx; }
-.status-chip.s4 { background: #fff3e0; color: #a66a00; } /* 退款审核中 - 橙色 */
-.order-no { color: #999; font-size: 24rpx; }
+.u-iconfont {
+  font-family: "uicon-iconfont";
+  text-decoration: none;
+  text-align: center;
+}
 
-/* 地址卡片 */
-.address-card { display: flex; align-items: flex-start; gap: 20rpx; }
-.icon-box { margin-top: 4rpx; }
-.icon { font-size: 36rpx; }
-.addr-info { flex: 1; }
-.addr-header { margin-bottom: 8rpx; display: flex; align-items: center; gap: 16rpx; }
-.name { font-size: 30rpx; font-weight: 600; color: #333; }
-.phone { font-size: 30rpx; font-weight: 600; color: #333; }
-.addr-detail { font-size: 26rpx; color: #666; line-height: 1.4; }
+.page {
+  min-height: 100vh;
+  background: $bg-primary;
+  padding-bottom: 160rpx;
+}
 
-/* 商品/DIY卡片 */
-.product-card { padding: 20rpx; }
-.materials-card { padding: 20rpx; }
-.card-title { font-size: 28rpx; color: #666; margin-bottom: 16rpx; font-weight: 500; }
-.row { display: flex; gap: 20rpx; align-items: flex-start; padding: 10rpx 0; }
-.thumb { width: 140rpx; height: 140rpx; border-radius: 12rpx; background: #f5f5f5; flex-shrink: 0; }
-.thumb-box { width: 140rpx; height: 140rpx; border-radius: 12rpx; background: #f5f5f5; flex-shrink: 0; overflow: hidden; }
-.material-thumb { width: 100rpx; height: 100rpx; border-radius: 8rpx; background: #f5f5f5; flex-shrink: 0; }
+/* ========== 状态横幅 ========== */
+.status-banner {
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+  padding: $space-xl $space-lg;
+}
 
-.meta { flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 100rpx; }
-.title { font-size: 28rpx; color: #333; line-height: 1.4; margin-bottom: 8rpx; }
-.sub { font-size: 24rpx; color: #999; margin-bottom: 8rpx; }
-.price-row { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
-.price { font-size: 30rpx; color: #333; font-weight: 500; }
-.qty { font-size: 26rpx; color: #999; }
+.status-banner.status-wait { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); }
+.status-banner.status-paid { background: linear-gradient(135deg, #EEF4FC, #BBDEFB); }
+.status-banner.status-shipped { background: linear-gradient(135deg, #EDF5EE, #C8E6C9); }
+.status-banner.status-done { background: linear-gradient(135deg, $bg-primary, $bg-secondary); }
+.status-banner.status-cancel { background: $bg-secondary; }
 
-/* 汇总信息 */
-.summary { padding: 24rpx; }
-.line { display: flex; justify-content: space-between; align-items: center; font-size: 28rpx; margin-bottom: 16rpx; }
-.line:last-child { margin-bottom: 0; }
-.line.total { border-top: 1rpx solid #eee; padding-top: 16rpx; margin-top: 8rpx; }
-.amount { color: #e54d42; font-weight: 700; font-size: 32rpx; }
+.status-icon { font-size: $text-xl; }
+.status-text { font-size: $text-md; font-weight: $font-bold; color: $text-primary; }
 
-/* 客服提示 */
-.service-tip { background: #fff; text-align: center; padding: 24rpx; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16rpx; }
-.tip-text { color: #999; font-size: 24rpx; width: 100%; text-align: center; }
+/* ========== 收货地址 ========== */
+.address-section { padding: $space-lg; }
 
-/* 物流信息按钮 */
-.logistics-btn {
+.addr-row {
+  display: flex;
+  gap: $space-md;
+  align-items: flex-start;
+}
+
+.addr-icon-wrap {
+  width: 64rpx;
+  height: 64rpx;
+  background: linear-gradient(135deg, #E8D5B8, #D4B48C);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8rpx;
-  padding: 16rpx 32rpx;
-  background: linear-gradient(135deg, #f5c93a 0%, #f5a623 100%);
-  border-radius: 32rpx;
-  margin-top: 8rpx;
-}
-.logistics-icon {
-  font-size: 28rpx;
-}
-.logistics-text {
-  font-size: 26rpx;
-  color: #333;
-  font-weight: 500;
+  flex-shrink: 0;
 }
 
-/* 底部栏 */
-.bar { 
-  position: fixed; left: 0; right: 0; bottom: 0; 
-  background: #ffffff; 
-  padding: 20rpx 30rpx calc(20rpx + env(safe-area-inset-bottom)); 
-  display: flex; justify-content: space-between; align-items: center; 
-  box-shadow: 0 -4rpx 16rpx rgba(0,0,0,0.06); 
+.addr-text { flex: 1; }
+
+.addr-name {
+  font-size: $text-base;
+  font-weight: $font-semibold;
+  color: $text-primary;
+  margin-bottom: 6rpx;
+}
+
+.addr-detail {
+  font-size: $text-sm;
+  color: $text-tertiary;
+  line-height: 1.5;
+}
+
+/* ========== 商品 ========== */
+.section {
+  background: #ffffff;
+  padding: $space-lg;
+  margin-bottom: $space-sm;
+}
+
+.goods-item {
+  display: flex;
+  gap: $space-md;
+  align-items: flex-start;
+  padding-bottom: $space-md;
+  border-bottom: 1rpx solid #f0ebe3;
+
+  &:last-child { border-bottom: none; padding-bottom: 0; }
+}
+
+.goods-thumb {
+  width: 120rpx;
+  height: 120rpx;
+  background: $bg-secondary;
+  border-radius: $radius-sm;
+  flex-shrink: 0;
+}
+
+.goods-info { flex: 1; }
+
+.goods-name {
+  font-size: $text-base;
+  color: $text-primary;
+  font-weight: $font-medium;
+  line-height: 1.4;
+  margin-bottom: $space-xs;
+}
+
+.goods-price-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.goods-price {
+  font-size: $text-md;
+  font-weight: $font-bold;
+  color: #D4B48C;
+}
+
+.goods-qty { font-size: $text-sm; color: $text-tertiary; }
+
+/* ========== 信息 ========== */
+.info-section { background: #ffffff; }
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $space-xs 0;
+  font-size: $text-sm;
+}
+
+.info-label { color: $text-secondary; }
+.info-value { color: $text-primary; }
+
+.total-row { border-top: 1rpx solid #e8e0d5; padding-top: $space-md; margin-top: $space-xs; }
+.total-label { font-size: $text-md; font-weight: $font-bold; color: $text-primary; }
+.total-value { font-size: $text-xl; font-weight: $font-bold; color: #D4B48C; }
+
+/* ========== 底部操作 ========== */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: $space-sm;
+  padding: $space-md $space-lg calc($space-md + env(safe-area-inset-bottom));
+  background: #ffffff;
+  border-top: 1rpx solid #e8e0d5;
+  box-shadow: 0 -4rpx 24rpx rgba(74, 55, 40, 0.06);
   z-index: 100;
 }
-.total { color: #333; font-size: 28rpx; }
-.money { color: #e54d42; font-weight: 700; font-size: 34rpx; margin-left: 8rpx; }
-.btn-group { display: flex; gap: 20rpx; }
-.btn {
-  margin: 0;
-  padding: 0 36rpx;
-  height: 72rpx;
-  line-height: 72rpx;
-  border-radius: 36rpx;
-  font-size: 28rpx;
-  font-weight: 500;
-  border: none;
-}
-.btn::after { border: none; }
-.cancel-btn { background: #f5f5f5; color: #666; }
-.pay-btn { background: #ffd84c; color: #333; font-weight: 600; }
-.done-btn { background: #f5f5f5; color: #999; }
 
-.loading, .empty { padding: 200rpx 0; text-align: center; color: #999; font-size: 28rpx; }
+.cancel-btn, .pay-btn, .express-btn, .receive-btn {
+  padding: 10rpx 32rpx;
+  border-radius: $radius-full;
+  font-size: $text-sm;
+  font-weight: $font-semibold;
+}
+
+.cancel-btn {
+  background: $bg-secondary;
+  color: $text-secondary;
+  border: 1rpx solid #e8e0d5;
+}
+
+.pay-btn {
+  background: linear-gradient(135deg, #E8D5B8, #D4B48C);
+  color: #ffffff;
+  box-shadow: 0 4rpx 16rpx rgba(212, 180, 140, 0.2);
+}
+
+.express-btn {
+  background: #ffffff;
+  color: #D4B48C;
+  border: 1rpx solid #D4B48C;
+}
+
+.receive-btn {
+  background: linear-gradient(135deg, #E8D5B8, #D4B48C);
+  color: #ffffff;
+  box-shadow: 0 4rpx 16rpx rgba(212, 180, 140, 0.2);
+}
 </style>

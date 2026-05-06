@@ -4,72 +4,69 @@
     <view class="section">
       <view class="section-title">收货地址</view>
       <view v-if="!selectedAddress" class="no-address" @click="goSelectAddress">
-        <view class="icon-box"><text class="icon">📍</text></view>
-        <text class="tip">请选择收货地址</text>
-        <text class="arrow">›</text>
+        <view class="addr-icon-wrap">
+          <text class="u-iconfont" style="font-size: 32rpx; color: #ffffff;">&#xe64e;</text>
+        </view>
+        <text class="addr-tip">请选择收货地址</text>
+        <text class="addr-arrow">›</text>
       </view>
       <view v-else class="address-card" @click="goSelectAddress">
-        <view class="icon-box"><text class="icon">📍</text></view>
+        <view class="addr-icon-wrap">
+          <text class="u-iconfont" style="font-size: 32rpx; color: #ffffff;">&#xe64e;</text>
+        </view>
         <view class="addr-info">
           <view class="addr-header">
-            <text class="name">{{ selectedAddress.name }}</text>
-            <text class="phone">{{ selectedAddress.phone }}</text>
+            <text class="addr-name">{{ selectedAddress.name }}</text>
+            <text class="addr-phone">{{ selectedAddress.phone }}</text>
           </view>
-          <view class="addr-detail">
-            {{ selectedAddress.province }} {{ selectedAddress.city }} {{ selectedAddress.district }} {{ selectedAddress.detail }}
-          </view>
+          <text class="addr-detail">{{ selectedAddress.province }} {{ selectedAddress.city }} {{ selectedAddress.district }} {{ selectedAddress.detail }}</text>
         </view>
-        <text class="arrow">›</text>
+        <text class="addr-arrow">›</text>
       </view>
     </view>
 
-    <!-- 商品列表 -->
+    <!-- 商品清单 -->
     <view class="section">
       <view class="section-title">商品清单</view>
-      
-      <!-- DIY 模式显示单一汇总项 -->
+
       <view v-if="orderMode === 'diy'" class="goods-list">
         <view class="goods-item">
           <image class="goods-thumb" :src="designImage" mode="aspectFill" @click="previewDesign" />
           <view class="goods-info">
-            <view class="goods-title">DIY商品：{{ diyName || '未命名' }}</view>
-            <view class="goods-meta">
-              <text class="price">¥{{ totalAmount }}</text>
-              <text class="qty">x1</text>
+            <view class="goods-name">DIY商品：{{ diyName || '未命名' }}</view>
+            <view class="goods-price-row">
+              <text class="goods-price">¥{{ totalAmount }}</text>
+              <text class="goods-qty">x1</text>
             </view>
           </view>
         </view>
       </view>
 
-      <!-- 普通模式显示商品列表 -->
       <view v-else class="goods-list">
-        <view v-for="item in cartItems" :key="item.id" class="goods-item">
+        <view class="goods-item" v-for="item in cartItems" :key="item.id">
           <image v-if="item.imageUrl || item.image" class="goods-thumb" :src="item.imageUrl || item.image" mode="aspectFill" />
-          <view v-else-if="item.color" class="goods-thumb" :style="{background: item.color}"></view>
-          <view v-else class="goods-thumb"></view>
+          <view v-else class="goods-thumb" :style="{background: item.color || '#F2EDE4'}"></view>
           <view class="goods-info">
-            <view class="goods-title">{{ item.title }}</view>
-            <view class="goods-meta">
-              <text class="price">¥{{ item.price }}</text>
-              <text class="qty">x{{ item.quantity }}</text>
+            <view class="goods-name">{{ item.title }}</view>
+            <view class="goods-price-row">
+              <text class="goods-price">¥{{ item.price }}</text>
+              <text class="goods-qty">x{{ item.quantity }}</text>
             </view>
           </view>
         </view>
       </view>
     </view>
 
-    <!-- DIY信息 (仅DIY模式显示) -->
+    <!-- DIY信息 -->
     <view class="section" v-if="orderMode === 'diy'">
       <view class="section-title">DIY信息</view>
-      
-      <view class="diy-info-row">
-        <text class="label">作品名称</text>
+      <view class="diy-row">
+        <text class="diy-label">作品名称</text>
         <input class="diy-input" type="text" v-model="diyName" placeholder="请输入作品名称" maxlength="20" />
       </view>
-      
-      <view class="diy-info-row design-row">
-        <text class="label">设计图</text>
-        <image :src="designImage" mode="aspectFit" class="small-preview-img" @click="previewDesign" />
+      <view class="diy-row">
+        <text class="diy-label">设计图</text>
+        <image :src="designImage" mode="aspectFit" class="small-preview" @click="previewDesign" />
       </view>
     </view>
 
@@ -79,33 +76,31 @@
       <input class="remark-input" type="text" v-model="remark" placeholder="选填，请先和商家协商一致" />
     </view>
 
-    <!-- 订单金额 -->
-    <view class="section">
+    <!-- 金额明细 -->
+    <view class="section amount-section">
       <view class="amount-row">
-        <text class="label">商品金额</text>
-        <text class="value">¥{{ totalAmount }}</text>
+        <text class="amount-label">商品金额</text>
+        <text class="amount-value">¥{{ totalAmount }}</text>
       </view>
       <view class="amount-row">
-        <text class="label">运费</text>
-        <text class="value">¥{{ shippingFee.toFixed(2) }}</text>
+        <text class="amount-label">运费</text>
+        <text class="amount-value">¥{{ shippingFee.toFixed(2) }}</text>
       </view>
-      <view class="amount-row total">
-        <text class="label">实付款</text>
-        <text class="value">¥{{ finalAmount }}</text>
+      <view class="amount-row total-row">
+        <text class="amount-label total-label">实付款</text>
+        <text class="amount-value total-value">¥{{ finalAmount }}</text>
       </view>
     </view>
 
     <!-- 底部提交栏 -->
     <view class="submit-bar">
-      <view class="total-info">
-        <text class="label">合计：</text>
-        <text class="amount">¥{{ finalAmount }}</text>
+      <view class="submit-total">
+        <text class="submit-total-label">合计：</text>
+        <text class="submit-total-money">¥{{ finalAmount }}</text>
       </view>
-      <view class="btn-group">
-        <button class="action-btn submit-btn" :disabled="!selectedAddress || submitting" @click="submitOrder">
-          {{ submitting ? '提交中...' : '提交订单' }}
-        </button>
-      </view>
+      <button class="submit-btn" :disabled="!selectedAddress || submitting" @click="submitOrder">
+        {{ submitting ? '提交中...' : '提交订单' }}
+      </button>
     </view>
   </view>
 </template>
@@ -119,7 +114,7 @@ import { resolveImageUrl } from '../../utils/imageHelper.js'
 const cartItems = ref([])
 const selectedAddress = ref(null)
 const submitting = ref(false)
-const orderMode = ref('cart') // cart or diy
+const orderMode = ref('cart')
 const diyItems = ref([])
 const designImage = ref('')
 const remark = ref('')
@@ -129,80 +124,48 @@ const totalAmount = computed(() => {
   return cartItems.value.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0).toFixed(2)
 })
 
-// 运费计算：新疆、西藏加15元，其他省份0元
 const shippingFee = computed(() => {
-  if (!selectedAddress.value || !selectedAddress.value.province) {
-    return 0
-  }
+  if (!selectedAddress.value || !selectedAddress.value.province) return 0
   const province = selectedAddress.value.province
-  if (province.includes('新疆') || province.includes('西藏')) {
-    return 15
-  }
+  if (province.includes('新疆') || province.includes('西藏')) return 15
   return 0
 })
 
-// 实付款 = 商品金额 + 运费
 const finalAmount = computed(() => {
   return (Number(totalAmount.value) + shippingFee.value).toFixed(2)
 })
 
 const classificationDetails = ref({})
-const classificationDetailKeys = ref({})
 const orderCategories = ref('')
 const beadDescription = ref('')
 
 onLoad(async (options) => {
-  // 检查是否是DIY订单
   if (options.mode === 'diy') {
     orderMode.value = 'diy'
     try {
-      // 优先尝试获取完整数据
       const data = uni.getStorageSync('diy_order_data')
       if (data && data.items) {
         diyItems.value = data.items
         cartItems.value = data.items
         designImage.value = data.designImage
-        beadDescription.value = data.beadDescription || '' // 获取珠子描述
-        // 获取分类详情 (1-8)
+        beadDescription.value = data.beadDescription || ''
         for (let i = 1; i <= 8; i++) {
-            if (data[`classificationDetail${i}`]) {
-                classificationDetails.value[i] = data[`classificationDetail${i}`]
-            }
-            if (data[`classificationDetailKey${i}`]) {
-                classificationDetailKeys.value[i] = data[`classificationDetailKey${i}`]
-            }
+          if (data[`classificationDetail${i}`]) classificationDetails.value[i] = data[`classificationDetail${i}`]
         }
         orderCategories.value = data.categories || ''
-      } else {
-        // 兼容旧格式
-        const items = uni.getStorageSync('diy_order_items')
-        if (items && Array.isArray(items)) {
-          diyItems.value = items
-          cartItems.value = items
-        }
       }
-      
-      // 如果传递了尺寸参数，自动填充到备注
-      if (options.size) {
-        remark.value = `手链尺寸: ${options.size}cm`
-      }
-      
-    } catch (e) {
-      console.error('获取DIY订单数据失败', e)
-    }
+      if (options.size) remark.value = `手链尺寸: ${options.size}cm`
+    } catch (e) {}
   } else if (options.mode === 'direct') {
     orderMode.value = 'direct'
     try {
       const item = uni.getStorageSync('direct_buy_item')
       if (item) {
-        // 确保图片路径处理
         item.imageUrl = resolveImageUrl(item.imageUrl)
         item.image = resolveImageUrl(item.image)
         cartItems.value = [item]
       }
-    } catch (e) {
-      console.error('获取购买商品失败', e)
-    }
+    } catch (e) {}
   } else {
     await loadCartItems()
   }
@@ -210,196 +173,96 @@ onLoad(async (options) => {
 })
 
 function previewDesign() {
-  if (designImage.value) {
-    uni.previewImage({ urls: [designImage.value] })
-  }
+  if (designImage.value) uni.previewImage({ urls: [designImage.value] })
 }
 
-
-
-// 加载购物车商品
 async function loadCartItems() {
   try {
     const res = await cartList()
     const items = res.items || []
-    
-    // 处理图片路径
     cartItems.value = items.map(item => {
       let imageUrl = item.imageUrl || item.image || ''
-      return {
-        ...item,
-        imageUrl: resolveImageUrl(imageUrl),
-        image: resolveImageUrl(imageUrl)
-      }
+      return { ...item, imageUrl: resolveImageUrl(imageUrl), image: resolveImageUrl(imageUrl) }
     })
-    
     if (cartItems.value.length === 0) {
       uni.showToast({ title: '购物车为空', icon: 'none' })
-      setTimeout(() => {
-        uni.navigateBack()
-      }, 1500)
+      setTimeout(() => { uni.navigateBack() }, 1500)
     }
-  } catch (e) {
-    console.error('加载购物车失败:', e)
-    uni.showToast({ title: '加载失败', icon: 'none' })
-  }
+  } catch (e) {}
 }
 
-// 加载默认地址
 async function loadDefaultAddress() {
   try {
     const res = await addressList()
     const addresses = Array.isArray(res) ? res : (res.data || [])
-    // 查找默认地址
     selectedAddress.value = addresses.find(addr => addr.isDefault) || addresses[0] || null
-  } catch (e) {
-    console.error('加载地址失败:', e)
-  }
+  } catch (e) {}
 }
 
-// 选择地址
 function goSelectAddress() {
-  uni.navigateTo({ 
+  uni.navigateTo({
     url: '/pages/address/select',
-    events: {
-      // 监听地址选择事件
-      selectAddress: (address) => {
-        selectedAddress.value = address
-      }
-    }
+    events: { selectAddress: (address) => { selectedAddress.value = address } }
   })
 }
 
-// 提交订单
 async function submitOrder() {
   if (!selectedAddress.value) {
     uni.showToast({ title: '请选择收货地址', icon: 'none' })
     return
   }
-
   if (submitting.value) return
-  
   submitting.value = true
   uni.showLoading({ title: '提交中...' })
 
+  const addr = selectedAddress.value
+  const addrFields = {
+    receiverName: addr.name, receiverPhone: addr.phone,
+    receiverProvince: addr.province, receiverCity: addr.city,
+    receiverDistrict: addr.district, receiverDetail: addr.detail,
+  }
+
   try {
     let res
-    
     if (orderMode.value === 'diy') {
-      // 构造符合API文档的数据结构
-      // items: [{ price, productId, quantity, title }]
-      // 动态使用 diyName 作为 items 中的 title (如果存在)
       const currentDiyName = diyName.value || '我的设计'
       const items = diyItems.value.map(item => ({
-        productId: item.productId || item.id || 0,
-        title: currentDiyName, // 强制将 title 绑定为 diyName
-        price: item.price,
-        quantity: item.quantity
+        productId: item.productId || item.id || 0, title: currentDiyName,
+        price: item.price, quantity: item.quantity
       }))
-
-      // 构建描述信息
-      // 优先使用 beadDescription (珠子排列描述)
-      // 如果没有，则使用分类描述作为后备
       let desc = beadDescription.value
-      
       if (!desc) {
-          desc = `分类:${orderCategories.value || ''}`
-          // classificationDetails[1] 存储的是色系名称/子分类名称
-          if (classificationDetails.value[1]) {
-            const detail = classificationDetails.value[1]
-            // 兼容处理：如果是字符串直接拼，如果是对象取name
-            const name = (typeof detail === 'object' && detail.name) ? detail.name : detail
-            desc += ` ${name}`
-          }
+        desc = `分类:${orderCategories.value || ''}`
+        if (classificationDetails.value[1]) {
+          const detail = classificationDetails.value[1]
+          desc += ` ${(typeof detail === 'object' && detail.name) ? detail.name : detail}`
+        }
       }
-
       res = await createDiyOrder({
-        // 基础字段
-        receiverName: selectedAddress.value.name,
-        receiverPhone: selectedAddress.value.phone,
-        receiverProvince: selectedAddress.value.province,
-        receiverCity: selectedAddress.value.city,
-        receiverDistrict: selectedAddress.value.district,
-        receiverDetail: selectedAddress.value.detail,
-        remark: remark.value || 'DIY设计订单',
-        
-        // DIY特定字段
-        items: items,
-        diyImage: designImage.value,
-        diyName: diyName.value || '我的设计',
-        description: desc.trim(),
-        designId: 0,
-        
-        // 运费（新疆西藏等偏远地区）
-        shippingFee: shippingFee.value
+        ...addrFields, remark: remark.value || 'DIY设计订单',
+        items, diyImage: designImage.value, diyName: diyName.value || '我的设计',
+        description: desc.trim(), designId: 0, shippingFee: shippingFee.value
       })
     } else if (orderMode.value === 'direct') {
-      // 直接购买：先清空购物车，确保只购买当前商品
-      try {
-        await clearCart()
-      } catch (e) {
-        console.warn('清空购物车失败，继续执行', e)
-      }
-
-      // 再加入购物车，再创建订单 (因为 /user/order/submit 404)
+      try { await clearCart() } catch (e) {}
       for (const item of cartItems.value) {
-          const pid = item.productId || item.id
-          if (pid) {
-              await cartAdd(Number(pid), Number(item.quantity || 1))
-          }
+        const pid = item.productId || item.id
+        if (pid) await cartAdd(Number(pid), Number(item.quantity || 1))
       }
-
-      // 使用购物车创建订单接口
-      res = await orderCreate({
-        addressId: selectedAddress.value.id,
-        receiverName: selectedAddress.value.name,
-        receiverPhone: selectedAddress.value.phone,
-        receiverProvince: selectedAddress.value.province,
-        receiverCity: selectedAddress.value.city,
-        receiverDistrict: selectedAddress.value.district,
-        receiverDetail: selectedAddress.value.detail,
-        remark: remark.value || '直接购买订单',
-        shippingFee: shippingFee.value
-      })
+      res = await orderCreate({ addressId: addr.id, ...addrFields, remark: remark.value || '直接购买订单', shippingFee: shippingFee.value })
     } else {
-      res = await orderCreate({
-        addressId: selectedAddress.value.id,
-        receiverName: selectedAddress.value.name,
-        receiverPhone: selectedAddress.value.phone,
-        receiverProvince: selectedAddress.value.province,
-        receiverCity: selectedAddress.value.city,
-        receiverDistrict: selectedAddress.value.district,
-        receiverDetail: selectedAddress.value.detail,
-        shippingFee: shippingFee.value
-      })
+      res = await orderCreate({ addressId: addr.id, ...addrFields, shippingFee: shippingFee.value })
     }
-    
+
     uni.hideLoading()
-    
-    // 获取订单ID (优先使用 id, 其次 orderId)
     const orderId = res.order?.id || res.id || res.order?.orderId || res.orderId
-    
     if (!orderId) {
-      console.error('订单创建成功但无法获取订单ID:', res)
       uni.showToast({ title: '订单创建失败', icon: 'none' })
       return
     }
-    
-    // 记录订单过期时间 (30分钟后)
-    try {
-      const expireTime = Date.now() + 30 * 60 * 1000
-      uni.setStorageSync('order_expire_' + orderId, expireTime)
-    } catch (e) {
-      console.error('保存订单过期时间失败', e)
-    }
-
+    try { uni.setStorageSync('order_expire_' + orderId, Date.now() + 30 * 60 * 1000) } catch (e) {}
     uni.showToast({ title: '订单创建成功', icon: 'success' })
-    
-    // 跳转到订单详情页
-    setTimeout(() => {
-      uni.redirectTo({ url: '/pages/order/detail?id=' + orderId })
-    }, 1500)
-    
+    setTimeout(() => { uni.redirectTo({ url: '/pages/order/detail?id=' + orderId }) }, 1500)
   } catch (e) {
     uni.hideLoading()
     console.error('创建订单失败:', e)
@@ -410,55 +273,57 @@ async function submitOrder() {
 }
 </script>
 
-<style scoped>
+<style lang="scss">
+@import '@/static/styles/variables.scss';
+
+.u-iconfont {
+  font-family: "uicon-iconfont";
+  text-decoration: none;
+  text-align: center;
+}
+
 .page {
   min-height: 100vh;
-  background: #f7f7f7;
-  padding-bottom: 140rpx;
+  background: $bg-primary;
+  padding-bottom: 160rpx;
 }
 
 .section {
-  background: #fff;
-  margin-bottom: 20rpx;
-  padding: 24rpx;
+  background: #ffffff;
+  padding: $space-lg;
+  margin-bottom: $space-sm;
 }
 
 .section-title {
-  font-size: 30rpx;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 24rpx;
+  font-size: $text-md;
+  font-weight: $font-bold;
+  color: $text-primary;
+  margin-bottom: $space-lg;
 }
 
-/* 收货地址 */
+/* ========== 地址 ========== */
 .no-address, .address-card {
   display: flex;
   align-items: center;
-  padding: 0;
-  background: #fff;
+  gap: $space-md;
 }
 
-.icon-box {
-  width: 60rpx;
-  height: 60rpx;
-  background: #ffb84d;
+.addr-icon-wrap {
+  width: 72rpx;
+  height: 72rpx;
+  background: linear-gradient(135deg, #E8D5B8, #D4B48C);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 20rpx;
+  flex-shrink: 0;
 }
 
-.no-address .icon, .address-card .icon {
-  font-size: 32rpx;
-  color: #fff;
-}
-
-.no-address .tip {
+.no-address .addr-tip {
   flex: 1;
-  font-size: 30rpx;
-  color: #333;
-  font-weight: 600;
+  font-size: $text-base;
+  color: $text-primary;
+  font-weight: $font-medium;
 }
 
 .addr-info {
@@ -468,83 +333,51 @@ async function submitOrder() {
 .addr-header {
   display: flex;
   align-items: center;
-  gap: 20rpx;
+  gap: $space-md;
   margin-bottom: 8rpx;
 }
 
-.addr-header .name {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #333;
+.addr-name {
+  font-size: $text-md;
+  font-weight: $font-semibold;
+  color: $text-primary;
 }
 
-.addr-header .phone {
-  font-size: 28rpx;
-  color: #666;
+.addr-phone {
+  font-size: $text-sm;
+  color: $text-secondary;
 }
 
 .addr-detail {
-  font-size: 26rpx;
-  color: #999;
+  font-size: $text-sm;
+  color: $text-tertiary;
+  line-height: 1.5;
 }
 
-.arrow {
-  font-size: 32rpx;
-  color: #ccc;
-  margin-left: 20rpx;
+.addr-arrow {
+  font-size: $text-xl;
+  color: $text-tertiary;
+  flex-shrink: 0;
 }
 
-/* DIY 信息 */
-.diy-info-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20rpx;
-}
-
-.diy-info-row:last-child {
-  margin-bottom: 0;
-}
-
-.diy-info-row .label {
-  width: 140rpx;
-  font-size: 28rpx;
-  color: #666;
-}
-
-.diy-input {
-  flex: 1;
-  height: 80rpx;
-  background: #f9f9f9;
-  border-radius: 8rpx;
-  padding: 0 20rpx;
-  font-size: 28rpx;
-  color: #333;
-}
-
-.small-preview-img {
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: 8rpx;
-  background: #f9f9f9;
-}
-
-/* 商品列表 */
+/* ========== 商品列表 ========== */
 .goods-list {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  gap: $space-md;
 }
 
 .goods-item {
   display: flex;
-  gap: 20rpx;
+  gap: $space-md;
+  align-items: flex-start;
 }
 
 .goods-thumb {
-  width: 120rpx;
-  height: 120rpx;
-  background: #f0f0f0;
-  border-radius: 12rpx;
+  width: 140rpx;
+  height: 140rpx;
+  background: $bg-secondary;
+  border-radius: $radius-sm;
   flex-shrink: 0;
 }
 
@@ -554,78 +387,116 @@ async function submitOrder() {
   flex-direction: column;
   justify-content: space-between;
   padding: 4rpx 0;
+  min-height: 120rpx;
 }
 
-.goods-title {
-  font-size: 28rpx;
-  color: #333;
+.goods-name {
+  font-size: $text-base;
+  color: $text-primary;
+  font-weight: $font-medium;
   line-height: 1.4;
 }
 
-.goods-meta {
+.goods-price-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
 }
 
-.goods-meta .price {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #ff6b6b;
+.goods-price {
+  font-size: $text-md;
+  font-weight: $font-bold;
+  color: #D4B48C;
 }
 
-.goods-meta .qty {
-  font-size: 24rpx;
-  color: #999;
+.goods-qty {
+  font-size: $text-sm;
+  color: $text-tertiary;
 }
 
-/* 备注输入框 */
-.remark-input {
-  width: 100%;
+/* ========== DIY信息 ========== */
+.diy-row {
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+  margin-bottom: $space-md;
+
+  &:last-child { margin-bottom: 0; }
+}
+
+.diy-label {
+  width: 140rpx;
+  font-size: $text-base;
+  color: $text-secondary;
+  flex-shrink: 0;
+}
+
+.diy-input {
+  flex: 1;
   height: 80rpx;
-  background: #f9f9f9;
-  border-radius: 8rpx;
-  padding: 0 24rpx;
-  font-size: 28rpx;
-  color: #333;
+  background: $bg-secondary;
+  border-radius: $radius-md;
+  padding: 0 $space-md;
+  font-size: $text-base;
+  color: $text-primary;
   box-sizing: border-box;
 }
 
-/* 金额 */
+.small-preview {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: $radius-md;
+  background: $bg-secondary;
+}
+
+/* ========== 备注 ========== */
+.remark-input {
+  width: 100%;
+  height: 80rpx;
+  background: $bg-secondary;
+  border-radius: $radius-md;
+  padding: 0 $space-md;
+  font-size: $text-base;
+  color: $text-primary;
+  box-sizing: border-box;
+}
+
+/* ========== 金额 ========== */
+.amount-section {
+  background: #ffffff;
+  padding: $space-lg;
+}
+
 .amount-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12rpx 0;
-  font-size: 28rpx;
+  padding: $space-xs 0;
+  font-size: $text-base;
 }
 
-.amount-row .label {
-  color: #666;
+.amount-label { color: $text-secondary; }
+.amount-value { color: $text-primary; }
+
+.total-row {
+  border-top: 1rpx solid #e8e0d5;
+  padding-top: $space-md;
+  margin-top: $space-sm;
 }
 
-.amount-row .value {
-  color: #333;
+.total-label {
+  font-size: $text-md;
+  font-weight: $font-bold;
+  color: $text-primary;
 }
 
-.amount-row.total {
-  border-top: 2rpx solid #f0f0f0;
-  padding-top: 20rpx;
-  margin-top: 10rpx;
+.total-value {
+  font-size: $text-xl;
+  font-weight: $font-bold;
+  color: #D4B48C;
 }
 
-.amount-row.total .label {
-  font-size: 30rpx;
-  font-weight: 700;
-}
-
-.amount-row.total .value {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #ff6b6b;
-}
-
-/* 提交栏 */
+/* ========== 底部提交栏 ========== */
 .submit-bar {
   position: fixed;
   bottom: 0;
@@ -634,57 +505,44 @@ async function submitOrder() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rpx 30rpx;
-  background: #fff;
-  border-top: 2rpx solid #f0f0f0;
-  box-shadow: 0 -4rpx 12rpx rgba(0, 0, 0, 0.05);
+  padding: $space-md $space-lg calc($space-md + env(safe-area-inset-bottom));
+  background: #ffffff;
+  border-top: 1rpx solid #e8e0d5;
+  box-shadow: 0 -4rpx 24rpx rgba(74, 55, 40, 0.06);
   z-index: 100;
 }
 
-.total-info {
+.submit-total {
   display: flex;
   align-items: baseline;
+  gap: 4rpx;
 }
 
-.total-info .label {
-  font-size: 28rpx;
-  color: #666;
+.submit-total-label {
+  font-size: $text-base;
+  color: $text-secondary;
 }
 
-.total-info .amount {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #ff6b6b;
-}
-
-.btn-group {
-  display: flex;
-  gap: 20rpx;
-}
-
-.action-btn {
-  padding: 0 40rpx;
-  height: 72rpx;
-  line-height: 72rpx;
-  font-size: 28rpx;
-  font-weight: 600;
-  border-radius: 36rpx;
-  border: none;
-  margin: 0;
-}
-
-.cart-btn {
-  background: #333;
-  color: #fff;
+.submit-total-money {
+  font-size: $text-xl;
+  font-weight: $font-bold;
+  color: #D4B48C;
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #ffd84c, #ffb84d);
-  color: #333;
-}
+  background: linear-gradient(135deg, #E8D5B8, #D4B48C);
+  color: #ffffff;
+  font-size: $text-md;
+  font-weight: $font-semibold;
+  border-radius: $radius-full;
+  border: none;
+  padding: 0 48rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  box-shadow: 0 8rpx 24rpx rgba(212, 180, 140, 0.25);
+  margin: 0;
 
-.submit-btn[disabled] {
-  background: #ddd;
-  color: #999;
+  &::after { border: none; }
+  &[disabled] { background: #e8e0d5; color: #9a8b7a; box-shadow: none; }
 }
 </style>

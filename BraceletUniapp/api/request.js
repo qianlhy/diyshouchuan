@@ -2,26 +2,14 @@
  * HTTP请求封装 - 统一处理JWT认证和错误
  */
 
-import { 
-  API_BASE_URL, 
-  TOKEN_HEADER, 
-  STORAGE_TOKEN_KEY,
-  REQUEST_TIMEOUT,
-  REQUEST_HEADERS,
-  RESPONSE_CODE
+import {
+    API_BASE_URL,
+    REQUEST_HEADERS,
+    REQUEST_TIMEOUT,
+    RESPONSE_CODE,
+    TOKEN_HEADER
 } from '../config.js'
-
-/**
- * 获取本地存储的Token
- */
-function getToken() {
-  try {
-    return uni.getStorageSync(STORAGE_TOKEN_KEY) || ''
-  } catch (e) {
-    console.error('获取Token失败:', e)
-    return ''
-  }
-}
+import { getToken, handleTokenExpired } from '../utils/auth.js'
 
 /**
  * 统一请求方法
@@ -133,32 +121,6 @@ export function request(options) {
       }
     })
   })
-}
-
-/**
- * 处理Token过期
- */
-function handleTokenExpired() {
-  try {
-    uni.removeStorageSync(STORAGE_TOKEN_KEY)
-    uni.removeStorageSync('user')
-    
-    // 提示用户重新登录
-    uni.showToast({
-      title: '登录已过期，请重新登录',
-      icon: 'none',
-      duration: 2000
-    })
-    
-    // 延迟跳转到登录页
-    setTimeout(() => {
-      uni.reLaunch({
-        url: '/pages/index/index'
-      })
-    }, 2000)
-  } catch (e) {
-    console.error('处理Token过期失败:', e)
-  }
 }
 
 /**

@@ -1,8 +1,8 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Login from '../views/Login.vue'
 import Home from '../views/Home.vue'
 import Welcome from '../views/home/Welcome.vue'
+import Login from '../views/Login.vue'
 
 // 动态导入页面组件
 const BannerManagement = () => import('../views/home/BannerManagement.vue')
@@ -11,6 +11,7 @@ const ProductManagement = () => import('../views/home/ProductManagement.vue')
 const OrderManagement = () => import('../views/home/OrderManagement.vue')
 const CustomerServiceManagement = () => import('../views/home/CustomerServiceManagement.vue')
 const DiyMaterialManagement = () => import('../views/home/DiyMaterialManagement.vue')
+const TemplateManagement = () => import('../views/home/TemplateManagement.vue')
 
 Vue.use(VueRouter)
 
@@ -71,6 +72,12 @@ const routes = [
         path: 'diy-material',
         name: 'DiyMaterialManagement',
         component: DiyMaterialManagement,
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'template',
+        name: 'TemplateManagement',
+        component: TemplateManagement,
         meta: { requiresAuth: true }
       }
     ]

@@ -58,6 +58,8 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
                 .excludePathPatterns("/user/category/**")
                 .excludePathPatterns("/user/product/**")
                 .excludePathPatterns("/user/banner/**")
+                // DIY模板接口无需登录
+                .excludePathPatterns("/user/template/**")
                 // 客服二维码公开接口
                 .excludePathPatterns("/user/common/customer-service-qr")
                 .excludePathPatterns("/notify/paySuccess")

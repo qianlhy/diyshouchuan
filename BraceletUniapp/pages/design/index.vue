@@ -456,14 +456,13 @@
 </template>
 
 <script setup>
-import { onShow } from '@dcloudio/uni-app'
+import { onLoad, onShow } from '@dcloudio/uni-app'
 import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from 'vue'
-// 直接从 api.js 导入以避免 index.js 可能的重导出问题
 import {
 addToCart,
 designCategoryList,
 designProductList,
-uploadFile
+uploadFile,
 } from '../../api/api.js'
 import { isLoggedIn } from '../../api/index.js'
 import { updateCartBadgeNow } from '../../utils/cartBadge.js'
@@ -1368,15 +1367,15 @@ function closeLoginPopup() {
 // 跳转到登录页面
 function goToLogin() {
   showLoginPopup.value = false
-  // 使用 switchTab 跳转到首页（tab页面），制作台页面会被保留在后台
   uni.switchTab({ url: '/pages/index/index' })
 }
 
 // 检查登录状态
 function checkLoginStatus() {
-  // 使用 api/index.js 中的 isLoggedIn 函数
   return isLoggedIn()
 }
+
+// 从URL参数加载模板
 
 // 从设计台加入购物车
 async function addToCartFromDesign() {
@@ -1534,6 +1533,57 @@ function ensureInit() {
   nextTick(() => {
     initData()
   })
+}
+
+// 加载模板数据
+function loadTemplateData() {
+  try {
+    const templateData = uni.getStorageSync('diy_template_data')
+    if (templateData && templateData.fromTemplate) {
+      // 清空当前设计
+      beads.value = []
+      
+      // 加载模板的珠子数据
+      if (templateData.beads && templateData.beads.length > 0) {
+        templateData.beads.forEach((bead, index) => {
+          beads.value.push({
+            _id: `b_${++beadIdCounter}`,
+            productId: bead.productId,
+            title: bead.title,
+            price: bead.price,
+            size: bead.size,
+            color: bead.color,
+            imageUrl: bead.imageUrl,
+            loadFailed: false,
+            isNew: false,
+            mirrored: bead.mirrored || false
+          })
+        })
+      }
+      
+      // 加载手围
+      if (templateData.size) {
+        selectedSize.value = templateData.size
+      }
+      
+      // 显示提示
+      uni.showToast({
+        title: `已加载模板：${templateData.templateName || '未命名'}`,
+        icon: 'none',
+        duration: 2000
+      })
+      
+      // 清除模板数据标记
+      uni.removeStorageSync('diy_template_data')
+      
+      // 重新计算布局
+      nextTick(() => {
+        calculateLayout()
+      })
+    }
+  } catch (e) {
+    console.error('加载模板数据失败:', e)
+  }
 }
 
 // 切换分类
@@ -2240,6 +2290,17 @@ onMounted(() => {
 
 onShow(() => {
   ensureInit()
+  // 检查是否需要加载模板数据
+  loadTemplateData()
+})
+
+onLoad((options) => {
+  console.log('Design Page onLoad options:', options)
+  
+  // 监听加载模板数据事件
+  uni.$on('loadTemplateData', () => {
+    loadTemplateData()
+  })
 })
 </script>
 

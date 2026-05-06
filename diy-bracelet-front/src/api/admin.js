@@ -195,20 +195,10 @@ export function uploadCustomerServiceQR (file) {
 // 获取客服二维码
 export function getCustomerServiceQR () {
   return request({
-    url: '/admin/common/customer-service-qr',
+    url: '/admin/customer-service-qr',
     method: 'get'
   })
 }
-
-// 删除客服二维码
-export function deleteCustomerServiceQR () {
-  return request({
-    url: '/admin/common/customer-service-qr',
-    method: 'delete'
-  })
-}
-
-// ============ DIY材料管理 ============
 
 // 获取DIY材料列表
 export function getDiyMaterialList (params) {
@@ -267,5 +257,41 @@ export function getColorSeriesList () {
   return request({
     url: '/admin/diy/material/colorSeries/list',
     method: 'get'
+  })
+}
+
+// ==================== DIY模板管理 ====================
+
+// 获取模板列表
+export function getTemplateList () {
+  return request({
+    url: '/admin/template/list',
+    method: 'get'
+  })
+}
+
+// 添加模板
+export function addTemplate (data) {
+  return request({
+    url: '/admin/template',
+    method: 'post',
+    data
+  })
+}
+
+// 更新模板
+export function updateTemplate (data) {
+  return request({
+    url: '/admin/template',
+    method: 'put',
+    data
+  })
+}
+
+// 删除模板
+export function deleteTemplate (id) {
+  return request({
+    url: `/admin/template/${id}`,
+    method: 'delete'
   })
 }

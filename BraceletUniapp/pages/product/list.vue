@@ -1,51 +1,67 @@
 <template>
   <view class="page">
-    <scroll-view class="tabs" scroll-x enable-flex>
-      <view class="tab" :class="{active: activeCid === 0}" @click="switchCategory(0)">全部</view>
-      <view class="tab" v-for="c in categories" :key="c.id" :class="{active: activeCid === c.id}" @click="switchCategory(c.id)">{{ c.name }}</view>
-    </scroll-view>
-    
-    <!-- 瀑布流布局：左右两列 -->
-    <view class="waterfall">
-      <!-- 左列 -->
-      <view class="column">
-        <view v-for="p in leftProducts" :key="p.id" class="card" @click="goDetail(p.id)">
-          <view class="img" :style="{height: p.imgHeight + 'rpx'}">
-            <image v-if="p.coverImage" :src="p.coverImage" mode="aspectFill" class="cover" />
-          </view>
-          <view class="info">
-            <view class="title">{{ p.title }}</view>
-            <view class="desc" v-if="p.description">{{ p.description }}</view>
-            <view class="bottom">
-              <view class="price">¥{{ p.price }}</view>
-              <view class="tag" v-if="p.stock > 0">库存{{ p.stock }}</view>
+    <!-- 顶部搜索栏 -->
+    <view class="search-bar">
+      <view class="search-input-wrap">
+        <text class="u-iconfont search-icon" style="font-size: 28rpx; color: #9a8b7a;">&#xe62a;</text>
+        <input
+          class="search-input"
+          v-model="searchKey"
+          placeholder="搜索商品"
+          confirm-type="search"
+          @confirm="onSearch"
+        />
+      </view>
+    </view>
+
+    <!-- 分类标签 -->
+    <view class="category-tabs">
+      <scroll-view class="tabs-scroll" scroll-x>
+        <view
+          class="tab"
+          :class="{ active: activeCid === 0 }"
+          @click="switchCategory(0)"
+        >全部</view>
+        <view
+          class="tab"
+          :class="{ active: activeCid === c.id }"
+          v-for="c in categories"
+          :key="c.id"
+          @click="switchCategory(c.id)"
+        >{{ c.name }}</view>
+      </scroll-view>
+    </view>
+
+    <!-- 商品列表 -->
+    <view class="product-list">
+      <view class="product-card" v-for="p in products" :key="p.id" @click="goDetail(p.id)">
+        <view class="product-img-wrap">
+          <image v-if="p.coverImage" :src="p.coverImage" mode="aspectFill" class="product-img" />
+          <view class="product-tag" v-if="p.stock > 0">库存{{ p.stock }}</view>
+        </view>
+        <view class="product-info">
+          <text class="product-name">{{ p.title }}</text>
+          <text class="product-desc" v-if="p.description">{{ p.description }}</text>
+          <view class="product-bottom">
+            <view class="price-wrap">
+              <text class="price-symbol">¥</text>
+              <text class="price-num">{{ p.price }}</text>
             </view>
+            <view class="buy-btn">查看</view>
           </view>
         </view>
       </view>
-      
-      <!-- 右列 -->
-      <view class="column">
-        <view v-for="p in rightProducts" :key="p.id" class="card" @click="goDetail(p.id)">
-          <view class="img" :style="{height: p.imgHeight + 'rpx'}">
-            <image v-if="p.coverImage" :src="p.coverImage" mode="aspectFill" class="cover" />
-          </view>
-          <view class="info">
-            <view class="title">{{ p.title }}</view>
-            <view class="desc" v-if="p.description">{{ p.description }}</view>
-            <view class="bottom">
-              <view class="price">¥{{ p.price }}</view>
-              <view class="tag" v-if="p.stock > 0">库存{{ p.stock }}</view>
-            </view>
-          </view>
-        </view>
-      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" v-if="!products.length && !loading">
+      <text class="empty-text">暂无相关商品</text>
     </view>
   </view>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { productList, categoryList } from '../../api/index.js'
 import { resolveImageUrl } from '../../utils/imageHelper.js'
 import { onLoad } from '@dcloudio/uni-app'
@@ -53,21 +69,7 @@ import { onLoad } from '@dcloudio/uni-app'
 const products = ref([])
 const categories = ref([])
 const activeCid = ref(0)
-
-// 为每个商品生成随机图片高度，模拟瀑布流效果
-function generateImgHeight() {
-  // 随机高度：320-480rpx之间（更大的图片）
-  return Math.floor(Math.random() * 160) + 320
-}
-
-// 将商品分配到左右两列，实现瀑布流布局
-const leftProducts = computed(() => {
-  return products.value.filter((_, index) => index % 2 === 0)
-})
-
-const rightProducts = computed(() => {
-  return products.value.filter((_, index) => index % 2 === 1)
-})
+const searchKey = ref('')
 
 function goDetail(id) {
   uni.navigateTo({ url: '/pages/product/detail?id=' + id })
@@ -77,11 +79,8 @@ async function loadProducts(cid) {
   try {
     const res = await productList(cid)
     let productData = Array.isArray(res) ? res : (res.data || [])
-    
-    // 为每个商品添加随机图片高度和完整图片URL
     products.value = productData.map(p => ({
       ...p,
-      imgHeight: generateImgHeight(),
       coverImage: resolveImageUrl(p.coverImage)
     }))
   } catch (e) {
@@ -90,12 +89,10 @@ async function loadProducts(cid) {
 }
 
 onLoad(async (options) => {
-  // 默认显示全部分类（categoryId = 0），除非明确指定其他分类
   const categoryId = options && options.categoryId ? Number(options.categoryId) : 0
   try {
     const cats = await categoryList()
     categories.value = Array.isArray(cats) ? cats : (cats.data || [])
-    // 始终从"全部"开始
     activeCid.value = 0
     await loadProducts(0)
   } catch (e) {}
@@ -105,153 +102,199 @@ async function switchCategory(cid) {
   activeCid.value = Number(cid) || 0
   await loadProducts(activeCid.value)
 }
+
+function onSearch() {
+  loadProducts(activeCid.value)
+}
 </script>
 
-<style>
-.page { 
-  padding: 24rpx; 
-  background: #f7f7f7; 
-  min-height: 100vh; 
-  box-sizing: border-box; 
+<style lang="scss">
+@import '@/static/styles/variables.scss';
+
+.u-iconfont {
+  font-family: "uicon-iconfont";
+  text-decoration: none;
+  text-align: center;
 }
 
-/* 分类标签栏 */
-.tabs { 
-  display: flex; 
-  gap: 16rpx; 
-  white-space: nowrap; 
-  padding-bottom: 12rpx; 
-  margin-bottom: 16rpx; 
-}
-.tab { 
-  display: inline-flex; 
-  padding: 10rpx 20rpx; 
-  background: #f6f6f6; 
-  color: #666; 
-  border-radius: 24rpx; 
-  font-size: 24rpx; 
-  transition: all 0.3s ease;
-}
-.tab.active { 
-  color: #333; 
-  font-weight: 700; 
-  background: #fff;
-  box-shadow: 0 4rpx 12rpx rgba(255, 216, 76, 0.3);
-  position: relative; 
-}
-.tab.active::after { 
-  content: ''; 
-  position: absolute; 
-  left: 12rpx; 
-  right: 12rpx; 
-  bottom: -6rpx; 
-  height: 6rpx; 
-  background: #ffd84c; 
-  border-radius: 6rpx; 
+.page {
+  background: $bg-primary;
+  min-height: 100vh;
+  padding-bottom: 180rpx;
 }
 
-/* 瀑布流容器 */
-.waterfall {
+/* ========== 搜索栏 ========== */
+.search-bar {
+  padding: $space-md $space-md 0;
+  background: $bg-primary;
+}
+
+.search-input-wrap {
   display: flex;
-  gap: 24rpx;
-  align-items: flex-start;
+  align-items: center;
+  gap: $space-sm;
+  background: #ffffff;
+  border-radius: $radius-full;
+  padding: 0 $space-md;
+  height: 72rpx;
+  border: 1rpx solid #e8e0d5;
+  box-shadow: 0 2rpx 12rpx rgba(74, 55, 40, 0.04);
 }
 
-/* 左右两列 */
-.column {
+.search-icon {
+  flex-shrink: 0;
+}
+
+.search-input {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 24rpx;
+  font-size: $text-sm;
+  color: $text-primary;
 }
 
-/* 商品卡片 */
-.card { 
-  background: #ffffff; 
-  border-radius: 16rpx; 
-  overflow: hidden; 
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.06);
-  transition: all 0.3s ease;
-  margin-bottom: 0;
+/* ========== 分类标签 ========== */
+.category-tabs {
+  padding: $space-md $space-md 0;
+  background: $bg-primary;
 }
 
-.card:active {
-  transform: scale(0.98);
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
+.tabs-scroll {
+  white-space: nowrap;
 }
 
-/* 商品图片 */
-.img { 
-  width: 100%;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e9eef3 100%);
+.tab {
+  display: inline-flex;
+  padding: 10rpx 24rpx;
+  background: #ffffff;
+  color: $text-secondary;
+  border-radius: $radius-full;
+  font-size: $text-sm;
+  margin-right: $space-sm;
+  border: 1rpx solid #e8e0d5;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab.active {
+  color: #D4B48C;
+  font-weight: $font-bold;
+  background: linear-gradient(135deg, #FDF8F3, #FAF2E8);
+  border-color: #D4B48C;
+  box-shadow: 0 4rpx 16rpx rgba(212, 180, 140, 0.15);
+}
+
+/* ========== 商品列表 ========== */
+.product-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-md;
+  padding: $space-md;
+  margin-top: $space-md;
+}
+
+.product-card {
+  background: #ffffff;
+  border-radius: $radius-md;
+  overflow: hidden;
+  border: 1rpx solid #e8e0d5;
+  box-shadow: 0 2rpx 12rpx rgba(74, 55, 40, 0.04);
+  transition: all 0.2s ease;
+
+  &:active {
+    transform: scale(0.97);
+    box-shadow: 0 4rpx 16rpx rgba(74, 55, 40, 0.08);
+  }
+}
+
+.product-img-wrap {
   position: relative;
+  width: 100%;
+  height: 320rpx;
+  background: $bg-secondary;
   overflow: hidden;
 }
 
-.cover {
+.product-img {
   width: 100%;
   height: 100%;
+}
+
+.product-tag {
+  position: absolute;
+  bottom: $space-xs;
+  right: $space-xs;
+  background: rgba(74, 55, 40, 0.6);
+  color: #ffffff;
+  font-size: 18rpx;
+  padding: 2rpx 12rpx;
+  border-radius: $radius-full;
+}
+
+.product-info {
+  padding: $space-sm;
+}
+
+.product-name {
+  font-size: $text-sm;
+  color: $text-primary;
+  font-weight: $font-semibold;
   display: block;
-}
-
-/* 商品信息 */
-.info { 
-  padding: 20rpx; 
-}
-
-.title { 
-  font-size: 30rpx; 
-  color: #333; 
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 10rpx;
-  font-weight: 600;
+  white-space: nowrap;
+  margin-bottom: 4rpx;
 }
 
-.desc {
-  font-size: 24rpx;
-  color: #999;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
+.product-desc {
+  font-size: $text-xs;
+  color: $text-tertiary;
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 12rpx;
+  white-space: nowrap;
+  margin-bottom: $space-xs;
 }
 
-/* 底部信息 */
-.bottom {
+.product-bottom {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 8rpx;
+  margin-top: $space-xs;
 }
 
-.price { 
-  color: #ff4d4f; 
-  font-weight: 700;
-  font-size: 36rpx;
-  font-family: 'DIN Alternate', 'Arial', sans-serif;
+.price-wrap {
+  display: flex;
+  align-items: baseline;
 }
 
-.price::before {
-  content: '¥';
-  font-size: 26rpx;
-  margin-right: 4rpx;
+.price-symbol {
+  font-size: $text-xs;
+  color: #D4B48C;
+  font-weight: $font-semibold;
 }
 
-.tag {
-  font-size: 20rpx;
-  color: #999;
-  padding: 4rpx 12rpx;
-  background: #f5f5f5;
-  border-radius: 4rpx;
+.price-num {
+  font-size: $text-md;
+  color: #D4B48C;
+  font-weight: $font-bold;
+}
+
+.buy-btn {
+  background: #D4B48C;
+  color: #ffffff;
+  font-size: $text-xs;
+  font-weight: $font-semibold;
+  padding: 6rpx 18rpx;
+  border-radius: $radius-full;
+}
+
+/* ========== 空状态 ========== */
+.empty-state {
+  padding: 120rpx $space-md;
+  text-align: center;
+}
+
+.empty-text {
+  font-size: $text-base;
+  color: $text-tertiary;
 }
 </style>

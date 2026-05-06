@@ -314,6 +314,27 @@ export function deliveryOrder(data) {
   return post(API_PATHS.ADMIN_ORDER_DELIVERY, data)
 }
 
+// ==================== DIY模板模块 ====================
+
+/**
+ * 查询模板列表
+ * @returns {Promise} { templates: [] }
+ */
+export function getTemplateList() {
+  return get(API_PATHS.TEMPLATE_LIST, {}, false)
+    .then(res => res.templates || res || [])
+}
+
+/**
+ * 查询模板详情
+ * @param {Number} id 模板ID
+ * @returns {Promise} { template: {} }
+ */
+export function getTemplateDetail(id) {
+  return get(`${API_PATHS.TEMPLATE_DETAIL}/${id}`, {}, false)
+    .then(res => res.template || res || null)
+}
+
 // ==================== 轮播图模块 ====================
 
 /**

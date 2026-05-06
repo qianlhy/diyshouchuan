@@ -40,7 +40,9 @@ export {
     // 订单
     submitOrder,
     // 登录
-    wechatLogin
+    wechatLogin,
+    // DIY模板
+    getTemplateList, getTemplateDetail
 } from './api.js'
 
 import { STORAGE_TOKEN_KEY, STORAGE_USER_KEY } from '../config.js'
