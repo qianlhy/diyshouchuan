@@ -76,12 +76,16 @@ public class WxCloudStorageUtil {
                 }
             }
 
+            // 添加 admin/common/image/ 前缀以匹配数据库存储格式
+            String fullObjectName = "admin/common/image/" + objectName;
+            
             PutObjectRequest putObjectRequest = new PutObjectRequest(
-                bucketName, objectName,
+                bucketName, fullObjectName,
                 new ByteArrayInputStream(bytes), objectMetadata
             );
             cosClient.putObject(putObjectRequest);
 
+            // 返回完整路径，与数据库格式保持一致
             String fileUrl = "/admin/common/image/" + objectName;
             log.info("文件上传成功: {}", fileUrl);
             return fileUrl;

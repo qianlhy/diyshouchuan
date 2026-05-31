@@ -1,0 +1,35 @@
+# 宝塔生产环境配置（profile=prod 时生效）
+# 部署时在宝塔启动参数加：-Dspring.profiles.active=prod
+sky:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 宝塔 MySQL 在同一台服务器，用 127.0.0.1
+    host: 127.0.0.1
+    port: 3306
+    database: diy_bangle1
+    username: diy_bangle1
+    password: 3G6XEpcZc4JDbcxH
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    database: 0
+  wxcloud:
+    storage:
+      bucket-name: 7072-prod-6gf1u2dc2e9e4f49-1391651365
+      region: ap-shanghai
+      secret-id: ""
+      secret-key: ""
+  alioss:
+    endpoint: ""
+    access-key-id: ""
+    access-key-secret: ""
+    bucket-name: ""
+  wechat:
+    # jar 与 certs 同级目录时生效
+    privateKeyFilePath: certs/apiclient_key.pem
+    weChatPayPublicKeyPath: certs/pub_key.pem
+    wechatPayCertFilePath: certs/apiclient_cert.pem
+
+local:
+  file:
+    base-path: .

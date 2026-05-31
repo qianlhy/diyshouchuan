@@ -39,7 +39,7 @@ public class WeChatPayUtil {
      * 加载商户私钥
      */
     private PrivateKey loadPrivateKey() throws Exception {
-        String privateKeyPath = weChatProperties.getPrivateKeyFilePath();
+        String privateKeyPath = CertPathResolver.resolve(weChatProperties.getPrivateKeyFilePath());
         String privateKeyPEM = new String(Files.readAllBytes(Paths.get(privateKeyPath)), StandardCharsets.UTF_8)
                 .replace("-----BEGIN PRIVATE KEY-----", "")
                 .replace("-----END PRIVATE KEY-----", "")
@@ -55,7 +55,7 @@ public class WeChatPayUtil {
      * 加载微信支付公钥
      */
     private PublicKey loadPublicKey() throws Exception {
-        String publicKeyPath = weChatProperties.getWeChatPayPublicKeyPath();
+        String publicKeyPath = CertPathResolver.resolve(weChatProperties.getWeChatPayPublicKeyPath());
         String publicKeyPEM = new String(Files.readAllBytes(Paths.get(publicKeyPath)), StandardCharsets.UTF_8)
                 .replace("-----BEGIN PUBLIC KEY-----", "")
                 .replace("-----END PUBLIC KEY-----", "")

@@ -40,19 +40,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public User wxLogin(UserLoginDTO userLoginDTO) {
         String openid = null;
-        
-        // 开发环境支持测试模式
-        if ("test_mode".equals(userLoginDTO.getCode())) {
-            // 测试模式，使用固定的测试openid
-            openid = "test_openid_123456";
-            log.info("使用测试模式登录，openid: {}", openid);
-        } else {
-            //调用微信接口服务获取用户的openid
-            log.info("开始调用微信接口获取openid，code: {}", userLoginDTO.getCode());
-            openid = getOpenId(userLoginDTO.getCode());
-            log.info("微信接口返回openid: {}", openid);
-        }
-        
+
+        // 调用微信接口服务获取用户的openid
+        log.info("开始调用微信接口获取openid，code: {}", userLoginDTO.getCode());
+        openid = getOpenId(userLoginDTO.getCode());
+        log.info("微信接口返回openid: {}", openid);
+
         if (openid == null) {
             log.error("获取openid失败，code可能已过期或无效");
             throw new LoginFailedException(MessageConstant.LOGIN_FAILED);

@@ -4,8 +4,8 @@ server:
 
 spring:
   profiles:
-    active: dev
-#    todo 上线的时候改成dev
+    # 默认 prod（宝塔部署）；本地 IDEA 开发请在运行配置里加 Active profiles: dev
+    active: prod
   main:
     allow-circular-references: true
   datasource:
@@ -61,19 +61,31 @@ diy:
       region: ${sky.wxcloud.storage.region}
       secret-id: ${sky.wxcloud.storage.secret-id:}
       secret-key: ${sky.wxcloud.storage.secret-key:}
-  wechat:
-    appid: ${sky.wechat.appid:wx9c62d0424c356479}
-    secret: ${sky.wechat.secret:0c37c44238e92f4da284b38a039db804}
-    mchid: ${sky.wechat.mchid:1734348120}
-    mchSerialNo: ${sky.wechat.mchSerialNo:5631D4B837843E6E770BE80D00AFC8B86B38A97B}
-    privateKeyFilePath: ${sky.wechat.privateKeyFilePath:/app/certs/apiclient_key.pem}
-    apiV3Key: ${sky.wechat.apiV3Key:12345678910111213141516171819202}
-    weChatPayPublicKeyId: ${sky.wechat.weChatPayPublicKeyId:PUB_KEY_ID_0117343481202025120300381767000202}
-    weChatPayPublicKeyPath: ${sky.wechat.weChatPayPublicKeyPath:/app/certs/pub_key.pem}
-    wechatPayCertFilePath: ${sky.wechat.wechatPayCertFilePath:}
-    notifyUrl: ${sky.wechat.notifyUrl:https://springboot-gq7m-207364-6-1391651365.sh.run.tcloudbase.com/notify/paySuccess}
-    refundNotifyUrl: ${sky.wechat.refundNotifyUrl:https://springboot-gq7m-207364-6-1391651365.sh.run.tcloudbase.com/notify/refundSuccess}
   # 快递100配置
   kuaidi100:
     key: ${sky.kuaidi100.key:AQtFRFEE8459}
     customer: ${sky.kuaidi100.customer:964095869D796B32D82C1FF95E4F8BA0}
+
+# 微信支付（WeChatProperties 读取 sky.wechat 前缀）
+sky:
+  wechat:
+    appid: wx9c62d0424c356479
+    secret: 0c37c44238e92f4da284b38a039db804
+    # 商户号（与 1113372390_20260531_cert 证书一致）
+    mchid: 1113372390
+    # 证书序列号（apiclient_cert.pem，商户平台也可查看）
+    mchSerialNo: 1DB1C2BB67D22630424DB20963F1BA6174783BD2
+    privateKeyFilePath: /app/certs/apiclient_key.pem
+    # TODO: 在商户平台【API安全->APIv3密钥】设置后填入真实32位密钥
+    apiV3Key: ${WECHAT_API_V3_KEY:gongjianqiangongjianqiangongjian}
+    # TODO: 在商户平台【API安全->微信支付公钥】申请后，下载 pub_key.pem 并填入公钥ID
+    weChatPayPublicKeyId: ${WECHAT_PAY_PUBLIC_KEY_ID:PUB_KEY_ID_0111133723902026053100291577000003}
+    weChatPayPublicKeyPath: /app/certs/pub_key.pem
+    wechatPayCertFilePath: /app/certs/apiclient_cert.pem
+    notifyUrl: https://www.tongxinyuan123.com/notify/paySuccess
+    refundNotifyUrl: https://www.tongxinyuan123.com/notify/refundSuccess
+
+# 本地文件上传根目录（实际保存到 {base-path}/uploads/）
+local:
+  file:
+    base-path: ${LOCAL_FILE_BASE_PATH:/app}
