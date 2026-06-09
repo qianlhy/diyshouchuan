@@ -4,6 +4,7 @@ import com.diy.constant.MessageConstant;
 import com.diy.entity.CustomerServiceQr;
 import com.diy.mapper.CustomerServiceQrMapper;
 import com.diy.result.Result;
+import com.diy.service.DiyDesignStorageService;
 import com.diy.utils.WxCloudStorageUtil;
 import com.diy.utils.LocalFileUtil;
 import io.swagger.annotations.Api;
@@ -24,11 +25,12 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -40,6 +42,9 @@ public class CommonController {
 
     @Autowired
     private CustomerServiceQrMapper customerServiceQrMapper;
+
+    @Autowired
+    private DiyDesignStorageService diyDesignStorageService;
 
     @Value("${local.file.base-path}")
     private String basePath;
@@ -118,19 +123,100 @@ public class CommonController {
             if (originalFilename != null && originalFilename.lastIndexOf(".") != -1) {
                 extension = originalFilename.substring(originalFilename.lastIndexOf("."));
             }
-            // 使用统一的文件夹结构：diy_designs/场景名/文件名
-            String folder = "diy_designs";
-            String objectName = folder + "/" + scene + "/" + UUID.randomUUID().toString().replace("-", "") + extension;
-            String path = wxCloudStorageUtil.upload(file.getBytes(), objectName);
-            java.util.Map<String, String> result = new java.util.HashMap<>();
-            result.put("path", path);
-            // 这里返回的url先与path保持一致，前端可按需拼接完整域名
-            result.put("url", path);
-            return Result.success(result);
+            String path = storeDiyImage(file.getBytes(), scene, extension);
+            return Result.success(buildUploadResult(path));
         } catch (Exception e) {
             log.error("用户端上传DIY截图失败", e);
             return Result.error(MessageConstant.UPLOAD_FAILED);
         }
+    }
+
+    /**
+     * 用户端上传DIY截图（Base64，走普通 JSON 请求，不依赖 uploadFile 合法域名）
+     */
+    @ApiOperation("用户端上传DIY截图(Base64)")
+    @PostMapping("/user/common/upload-base64")
+    public Result<Map<String, String>> uploadDiyScreenshotBase64(@RequestBody Map<String, String> body) {
+        String base64 = body != null ? body.get("base64") : null;
+        String scene = body != null ? body.get("scene") : null;
+        String extension = body != null ? body.get("extension") : null;
+        log.info("用户端上传DIY截图(Base64): scene={}, extension={}, size={}",
+                scene, extension, base64 != null ? base64.length() : 0);
+        if (base64 == null || base64.trim().isEmpty()) {
+            return Result.error("上传内容不能为空");
+        }
+        try {
+            String payload = base64.trim();
+            int commaIndex = payload.indexOf(',');
+            if (payload.startsWith("data:") && commaIndex > 0) {
+                payload = payload.substring(commaIndex + 1);
+            }
+            byte[] bytes = Base64.getDecoder().decode(payload);
+            if (bytes.length == 0) {
+                return Result.error("上传内容无效");
+            }
+            String path = storeDiyImage(bytes, scene, extension);
+            return Result.success(buildUploadResult(path));
+        } catch (IllegalArgumentException e) {
+            log.error("Base64解码失败", e);
+            return Result.error("图片数据格式错误");
+        } catch (Exception e) {
+            log.error("用户端上传DIY截图(Base64)失败", e);
+            return Result.error(MessageConstant.UPLOAD_FAILED);
+        }
+    }
+
+    private Map<String, String> buildUploadResult(String path) {
+        Map<String, String> result = new HashMap<>();
+        result.put("path", path);
+        result.put("url", path);
+        String fileName = diyDesignStorageService.extractFileName(path);
+        if (fileName != null) {
+            result.put("publicUrl", "/diy-images/" + fileName);
+        }
+        return result;
+    }
+
+    private String storeDiyImage(byte[] bytes, String scene, String extension) throws Exception {
+        if (scene == null || scene.trim().isEmpty()) {
+            scene = "diy_design";
+        }
+        if (!"diy_design".equalsIgnoreCase(scene.trim())) {
+            throw new IllegalArgumentException("不支持的上传场景: " + scene);
+        }
+        return diyDesignStorageService.save(bytes, extension);
+    }
+
+    @ApiOperation("读取DIY设计图(用户端)")
+    @GetMapping("/user/common/diy-design/file")
+    public ResponseEntity<Resource> getDiyDesignFileForUser(@RequestParam("name") String name) {
+        return buildDiyDesignFileResponse(name);
+    }
+
+    @ApiOperation("读取DIY设计图(管理端)")
+    @GetMapping("/admin/common/diy-design/file")
+    public ResponseEntity<Resource> getDiyDesignFileForAdmin(@RequestParam("name") String name) {
+        return buildDiyDesignFileResponse(name);
+    }
+
+    private ResponseEntity<Resource> buildDiyDesignFileResponse(String name) {
+        File file = diyDesignStorageService.resolve(name);
+        if (file == null) {
+            log.warn("DIY 设计图不存在: {}", name);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        String extension = getFileExtension(file.getName()).toLowerCase();
+        if (!ALLOWED_EXTENSIONS.contains(extension)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        FileSystemResource resource = new FileSystemResource(file);
+        log.info("返回 DIY 设计图: {} -> {}", name, file.getAbsolutePath());
+        return ResponseEntity.ok()
+                .contentType(getMediaType(extension))
+                .cacheControl(CacheControl.maxAge(Duration.ofDays(30)))
+                .body(resource);
     }
     /**
      * 本地文件上传
@@ -155,6 +241,15 @@ public class CommonController {
     }
 
     /**
+     * 读取图片（query 参数，避免 Nginx 把 .jpg/.png 当静态资源拦截）
+     */
+    @ApiOperation("读取图片文件(参数形式)")
+    @GetMapping("/admin/common/image/view")
+    public ResponseEntity<Resource> getImageView(@RequestParam("path") String path) {
+        return loadImageResource(path);
+    }
+
+    /**
      * 读取图片文件
      * @param request HTTP请求
      * @return 图片文件
@@ -163,69 +258,56 @@ public class CommonController {
     @GetMapping("/admin/common/image/**")
     public ResponseEntity<Resource> getImage(HttpServletRequest request) {
         try {
-            // 获取请求路径
             String requestURI = request.getRequestURI();
-            String imagePath = requestURI.substring(requestURI.indexOf("/admin/common/image/") + 20);
-            
+            String prefix = "/admin/common/image/";
+            int prefixIndex = requestURI.indexOf(prefix);
+            if (prefixIndex < 0) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            String imagePath = requestURI.substring(prefixIndex + prefix.length());
+            if ("view".equals(imagePath) || imagePath.startsWith("view?")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            return loadImageResource(imagePath);
+        } catch (Exception e) {
+            log.error("读取图片文件失败", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    private ResponseEntity<Resource> loadImageResource(String imagePath) {
+        try {
             log.info("读取图片文件: {}", imagePath);
             log.info("基础路径basePath: {}", basePath);
-            
-            // 移除开头的斜杠
+
             String cleanPath = imagePath;
             if (cleanPath.startsWith("/") || cleanPath.startsWith("\\")) {
                 cleanPath = cleanPath.substring(1);
             }
-            // 统一使用正斜杠
             cleanPath = cleanPath.replace("\\", "/");
             log.info("清理后的路径cleanPath: {}", cleanPath);
-            
-            // 安全检查：防止路径遍历攻击
+
             if (cleanPath.contains("../") || cleanPath.contains("..\\")) {
                 log.warn("检测到路径遍历攻击尝试: {}", imagePath);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
-            
-            // 先尝试从本地文件系统读取（兼容旧数据和本地开发）
-            try {
-                Path fullPath = Paths.get(basePath, cleanPath).normalize();
-                log.info("完整文件路径fullPath: {}", fullPath);
-                
-                // 检查文件是否在基础路径内
-                Path baseDir = Paths.get(basePath).toAbsolutePath().normalize();
-                log.info("基础目录baseDir: {}", baseDir);
-                
-                if (fullPath.startsWith(baseDir)) {
-                    File file = fullPath.toFile();
-                    log.info("文件对象: exists={}, isFile={}, absolutePath={}", 
-                            file.exists(), file.isFile(), file.getAbsolutePath());
-                    
-                    if (file.exists() && file.isFile()) {
-                        // 检查文件扩展名
-                        String fileName = file.getName();
-                        String extension = getFileExtension(fileName).toLowerCase();
-                        log.info("文件名: {}, 扩展名: {}", fileName, extension);
-                        
-                        if (!ALLOWED_EXTENSIONS.contains(extension)) {
-                            log.warn("不支持的文件类型: {}", extension);
-                            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-                        }
-                        
-                        FileSystemResource resource = new FileSystemResource(file);
-                        MediaType mediaType = getMediaType(extension);
-                        
-                        log.info("从本地文件系统成功读取图片，准备返回: contentType={}", mediaType);
-                        return ResponseEntity.ok()
-                                .contentType(mediaType)
-                                .cacheControl(CacheControl.maxAge(Duration.ofDays(7)))
-                                .body(resource);
-                    }
+
+            File localFile = LocalFileUtil.resolveLocalFile(basePath, cleanPath);
+            if (localFile != null) {
+                String extension = getFileExtension(localFile.getName()).toLowerCase();
+                if (!ALLOWED_EXTENSIONS.contains(extension)) {
+                    log.warn("不支持的文件类型: {}", extension);
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
                 }
-            } catch (Exception e) {
-                // 本地读取异常不影响后续从对象存储读取
-                log.warn("从本地文件系统读取图片异常，将尝试从对象存储读取: {}", e.getMessage());
+                FileSystemResource resource = new FileSystemResource(localFile);
+                MediaType mediaType = getMediaType(extension);
+                log.info("从本地文件系统成功读取图片: {}", localFile.getAbsolutePath());
+                return ResponseEntity.ok()
+                        .contentType(mediaType)
+                        .cacheControl(CacheControl.maxAge(Duration.ofDays(7)))
+                        .body(resource);
             }
-            
-            // 本地没有找到文件，尝试从对象存储读取
+
             String objectName = cleanPath;
             log.info("尝试从对象存储读取文件: {}", objectName);
             byte[] data = wxCloudStorageUtil.download(objectName);
@@ -233,22 +315,22 @@ public class CommonController {
                 log.warn("对象存储中未找到文件: {}", objectName);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
-            
+
             String extension = getFileExtension(objectName).toLowerCase();
             if (!ALLOWED_EXTENSIONS.contains(extension)) {
                 log.warn("对象存储中文件类型不受支持: {}", extension);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
-            
+
             MediaType mediaType = getMediaType(extension);
             ByteArrayResource resource = new ByteArrayResource(data);
             log.info("从对象存储成功读取图片，准备返回: contentType={}", mediaType);
-            
+
             return ResponseEntity.ok()
                     .contentType(mediaType)
                     .cacheControl(CacheControl.maxAge(Duration.ofDays(7)))
                     .body(resource);
-                    
+
         } catch (Exception e) {
             log.error("读取图片文件失败", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

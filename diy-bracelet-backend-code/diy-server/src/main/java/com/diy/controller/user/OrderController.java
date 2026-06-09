@@ -219,12 +219,19 @@ public class OrderController {
      * @return
      */
     @GetMapping("/detail")
-    @ApiOperation("根据orderId查看订单详情")
+    @ApiOperation("根据orderId或orderNo查看订单详情")
     public Result<OrderDetailVO> getOrderDetail(
-            @ApiParam(value = "订单ID", required = true) @RequestParam Long orderId) {
-        
-        // 获取订单详情
-        OrderVO orderVO = orderService.getDetails(orderId);
+            @ApiParam(value = "订单ID") @RequestParam(required = false) Long orderId,
+            @ApiParam(value = "商户订单号") @RequestParam(required = false) String orderNo) {
+
+        OrderVO orderVO;
+        if (orderId != null) {
+            orderVO = orderService.getDetails(orderId);
+        } else if (orderNo != null && !orderNo.trim().isEmpty()) {
+            orderVO = orderService.getDetailsByOrderNo(orderNo.trim());
+        } else {
+            return Result.error("订单ID或订单号不能为空");
+        }
         
         // 转换为新的VO格式
         OrderDetailVO.Order order = OrderDetailVO.Order.builder()

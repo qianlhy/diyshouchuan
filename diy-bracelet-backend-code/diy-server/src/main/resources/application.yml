@@ -89,3 +89,4 @@ sky:
 local:
   file:
     base-path: ${LOCAL_FILE_BASE_PATH:/app}
+    diy-design-dir: ${LOCAL_DIY_DESIGN_DIR:}

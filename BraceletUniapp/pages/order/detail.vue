@@ -46,15 +46,15 @@
       </view>
       <view class="info-row">
         <text class="info-label">商品金额</text>
-        <text class="info-value">¥{{ order.totalAmount }}</text>
+        <text class="info-value">¥{{ formatOrderAmount(order.totalAmount) }}</text>
       </view>
       <view class="info-row" v-if="order.shippingFee > 0">
         <text class="info-label">运费</text>
-        <text class="info-value">¥{{ order.shippingFee }}</text>
+        <text class="info-value">¥{{ formatOrderAmount(order.shippingFee) }}</text>
       </view>
       <view class="info-row total-row">
         <text class="info-label total-label">实付款</text>
-        <text class="info-value total-value">¥{{ (order.totalAmount + (order.shippingFee || 0)).toFixed(2) }}</text>
+        <text class="info-value total-value">¥{{ formatOrderAmount(order.totalAmount, order.shippingFee) }}</text>
       </view>
     </view>
 
@@ -76,6 +76,8 @@ import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import { cancelOrder as apiCancelOrder, completeOrder, orderDetail } from '../../api/index.js'
 import { resolveImageUrl } from '../../utils/imageHelper.js'
+import { formatOrderAmount, formatOrderTime, normalizeOrder, normalizeOrderItem } from '../../utils/orderHelper.js'
+import { handleOrderPayment } from '../../utils/paymentHelper.js'
 
 const order = ref(null)
 const STATUS_MAP = {
@@ -90,22 +92,22 @@ let statusText = ref('加载中...')
 let statusIcon = ref('')
 let statusBannerClass = ref('')
 
-function formatTime(time) {
-  if (!time) return '-'
-  const d = new Date(time)
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
-}
+const formatTime = formatOrderTime
 
 async function loadDetail(id) {
   try {
-    const res = await orderDetail(Number(id))
-    order.value = res && res.order ? res.order : res
+    const res = await orderDetail(id)
+    const raw = res && res.order ? res.order : res
+    order.value = normalizeOrder(raw)
     if (order.value) {
-      order.value.items = (order.value.items || []).map(item => ({
-        ...item,
-        imageUrl: resolveImageUrl(item.imageUrl || item.image),
-        image: resolveImageUrl(item.imageUrl || item.image)
-      }))
+      order.value.items = (order.value.items || []).map(item => {
+        const normalized = normalizeOrderItem(item)
+        return {
+          ...normalized,
+          imageUrl: resolveImageUrl(normalized.imageUrl),
+          image: resolveImageUrl(normalized.image)
+        }
+      })
       const s = STATUS_MAP[order.value.status] || STATUS_MAP[0]
       statusText.value = s.text
       statusIcon.value = s.icon
@@ -136,53 +138,11 @@ async function cancelOrder() {
   })
 }
 
-async function goPay() {
+function goPay() {
   if (!order.value) return
-  
-  uni.showLoading({ title: '正在发起支付...', mask: true })
-  
-  try {
-    // 调用后端获取支付参数
-    const payRes = await orderPay(order.value.orderNo, 1) // 1=微信支付
-    console.log('支付参数:', payRes)
-    
-    if (!payRes || !payRes.nonceStr) {
-      uni.hideLoading()
-      uni.showToast({ title: '获取支付信息失败', icon: 'none' })
-      return
-    }
-    
-    // 调起微信支付
-    uni.requestPayment({
-      provider: 'wxpay',
-      timeStamp: payRes.timeStamp || String(Date.now()),
-      nonceStr: payRes.nonceStr,
-      package: payRes.packageValue || payRes.package,
-      signType: payRes.signType || 'RSA',
-      paySign: payRes.paySign,
-      success: (res) => {
-        uni.hideLoading()
-        uni.showToast({ title: '支付成功', icon: 'success' })
-        // 刷新订单状态
-        setTimeout(() => {
-          loadDetail(order.value.id)
-        }, 1500)
-      },
-      fail: (err) => {
-        uni.hideLoading()
-        console.error('支付失败:', err)
-        if (err.errCode === -2) {
-          uni.showToast({ title: '用户取消支付', icon: 'none' })
-        } else {
-          uni.showToast({ title: '支付失败', icon: 'none' })
-        }
-      }
-    })
-  } catch (e) {
-    uni.hideLoading()
-    console.error('发起支付失败:', e)
-    uni.showToast({ title: e.message || '支付失败', icon: 'none' })
-  }
+  handleOrderPayment(order.value, () => {
+    loadDetail(order.value.id)
+  })
 }
 
 function viewExpress() {

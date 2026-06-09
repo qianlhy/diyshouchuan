@@ -217,6 +217,7 @@
 
 <script>
 import { getProductList, addProduct, updateProduct, deleteProduct, getAllCategories, getProductDetail } from '@/api/admin'
+import { getImageUrl } from '@/utils/image'
 
 export default {
   name: 'ProductManagement',
@@ -513,15 +514,7 @@ export default {
       this.productForm.images = []
       this.imagesTouched = true
     },
-    getImageUrl (relativePath) {
-      if (!relativePath) return ''
-      if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) return relativePath
-      const base = (process.env.VUE_APP_API_TARGET || process.env.VUE_APP_BASE_URL || window.location.origin || '').replace(/\/$/, '')
-      if (relativePath.startsWith('/')) {
-        return `${base}${relativePath}`
-      }
-      return `${base}/${relativePath}`
-    },
+    getImageUrl,
     toRelativePath (url) {
       if (!url) return ''
       const base = (process.env.VUE_APP_API_TARGET || process.env.VUE_APP_BASE_URL || window.location.origin || '').replace(/\/$/, '')

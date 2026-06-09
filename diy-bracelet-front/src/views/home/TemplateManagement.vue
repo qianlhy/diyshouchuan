@@ -150,6 +150,7 @@
 
 <script>
 import { addTemplate, deleteTemplate, getDiyMaterialList, getTemplateList, updateTemplate } from '@/api/admin'
+import { getImageUrl } from '@/utils/image'
 
 export default {
   name: 'TemplateManagement',
@@ -360,12 +361,7 @@ export default {
       return (isJPG || isPNG) && isLt2M
     },
 
-    // 获取图片URL
-    getImageUrl (url) {
-      if (!url) return ''
-      if (url.startsWith('http')) return url
-      return process.env.VUE_APP_BASE_API + url
-    }
+    getImageUrl
   }
 }
 </script>

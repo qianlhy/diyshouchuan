@@ -31,7 +31,8 @@
 
       <view v-if="orderMode === 'diy'" class="goods-list">
         <view class="goods-item">
-          <image class="goods-thumb" :src="designImage" mode="aspectFill" @click="previewDesign" />
+          <image v-if="designImage" class="goods-thumb" :src="designImage" mode="aspectFill" @click="previewDesign" @error="onDesignImageError" />
+          <view v-else class="goods-thumb goods-thumb-empty">暂无设计图</view>
           <view class="goods-info">
             <view class="goods-name">DIY商品：{{ diyName || '未命名' }}</view>
             <view class="goods-price-row">
@@ -66,7 +67,8 @@
       </view>
       <view class="diy-row">
         <text class="diy-label">设计图</text>
-        <image :src="designImage" mode="aspectFit" class="small-preview" @click="previewDesign" />
+        <image v-if="designImage" :src="designImage" mode="aspectFit" class="small-preview" @click="previewDesign" @error="onDesignImageError" />
+        <view v-else class="small-preview small-preview-empty">暂无设计图</view>
       </view>
     </view>
 
@@ -109,7 +111,7 @@
 import { onLoad } from '@dcloudio/uni-app'
 import { computed, ref } from 'vue'
 import { addressList, cartAdd, cartList, clearCart, createDiyOrder, orderCreate } from '../../api/index.js'
-import { resolveImageUrl } from '../../utils/imageHelper.js'
+import { extractUploadPath, resolveImageUrl, toRelativeImagePath } from '../../utils/imageHelper.js'
 
 const cartItems = ref([])
 const selectedAddress = ref(null)
@@ -117,6 +119,8 @@ const submitting = ref(false)
 const orderMode = ref('cart')
 const diyItems = ref([])
 const designImage = ref('')
+const designImageRaw = ref('')
+const designImageTriedRemote = ref(false)
 const remark = ref('')
 const diyName = ref('')
 
@@ -147,7 +151,9 @@ onLoad(async (options) => {
       if (data && data.items) {
         diyItems.value = data.items
         cartItems.value = data.items
-        designImage.value = data.designImage
+        designImageRaw.value = data.designImage || ''
+        // 优先使用本地临时预览图（上传后立即展示，不依赖网络）
+        designImage.value = data.designImagePreview || resolveImageUrl(designImageRaw.value)
         beadDescription.value = data.beadDescription || ''
         for (let i = 1; i <= 8; i++) {
           if (data[`classificationDetail${i}`]) classificationDetails.value[i] = data[`classificationDetail${i}`]
@@ -171,6 +177,13 @@ onLoad(async (options) => {
   }
   await loadDefaultAddress()
 })
+
+function onDesignImageError() {
+  if (!designImageTriedRemote.value && designImageRaw.value) {
+    designImageTriedRemote.value = true
+    designImage.value = resolveImageUrl(designImageRaw.value)
+  }
+}
 
 function previewDesign() {
   if (designImage.value) uni.previewImage({ urls: [designImage.value] })
@@ -240,7 +253,7 @@ async function submitOrder() {
       }
       res = await createDiyOrder({
         ...addrFields, remark: remark.value || 'DIY设计订单',
-        items, diyImage: designImage.value, diyName: diyName.value || '我的设计',
+        items, diyImage: toRelativeImagePath(designImageRaw.value || designImage.value), diyName: diyName.value || '我的设计',
         description: desc.trim(), designId: 0, shippingFee: shippingFee.value
       })
     } else if (orderMode.value === 'direct') {
@@ -379,6 +392,19 @@ async function submitOrder() {
   background: $bg-secondary;
   border-radius: $radius-sm;
   flex-shrink: 0;
+}
+
+.goods-thumb-empty,
+.small-preview-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $text-xs;
+  color: $text-tertiary;
+  text-align: center;
+  line-height: 1.4;
+  padding: 8rpx;
+  box-sizing: border-box;
 }
 
 .goods-info {

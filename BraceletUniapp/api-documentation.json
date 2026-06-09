@@ -1,7 +1,7 @@
 {
   "title": "DIY手镯小程序后端接口文档",
   "version": "1.0.0",
-  "baseUrl": "http://localhost:8080",
+  "baseUrl": "https://oo.yiyszbd.cwww.tongxinyuan123.com",
   "authentication": {
     "type": "JWT",
     "header": "authentication",

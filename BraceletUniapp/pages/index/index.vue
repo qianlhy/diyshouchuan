@@ -53,13 +53,13 @@
       </view>
       <view class="category-item" @click="goTemplateList">
         <view class="cat-icon-wrap" style="background: #F5F0E8;">
-          <text class="u-iconfont" style="font-size: 44rpx; color: #C9A86C;">&#xe673;</text>
+          <text class="u-iconfont" style="font-size: 44rpx; color: #C9A86C;">&#xe669;</text>
         </view>
         <text class="cat-label">模板中心</text>
       </view>
       <view class="category-item" @click="goOrderList">
         <view class="cat-icon-wrap" style="background: #EDF5EE;">
-          <text class="u-iconfont" style="font-size: 44rpx; color: #7AB88A;">&#xe618;</text>
+          <text class="u-iconfont" style="font-size: 44rpx; color: #7AB88A;">&#xe690;</text>
         </view>
         <text class="cat-label">我的订单</text>
       </view>
@@ -70,7 +70,7 @@
       <view class="section-header">
         <view class="header-left">
           <text class="section-icon">&#xe673;</text>
-          <text class="section-title">热门模板</text>
+          <text class="section-title">创意广场</text>
         </view>
         <view class="header-right" @click="goTemplateList">
           <text class="more-text">查看更多</text>
@@ -131,7 +131,19 @@
           <input type="nickname" class="nickname-input" v-model="tempNickname" placeholder="请输入昵称" @blur="onNicknameBlur" />
         </view>
 
-        <button class="confirm-btn" @click="confirmLogin">确认登录</button>
+        <view class="agreement-row" @click="toggleAgreement">
+          <view class="checkbox" :class="{ checked: agreedPrivacy }">
+            <text v-if="agreedPrivacy" class="check-icon">✓</text>
+          </view>
+          <view class="agreement-text">
+            <text>我已阅读并同意</text>
+            <text class="link" @click.stop="showPrivacy">《隐私政策》</text>
+            <text>和</text>
+            <text class="link" @click.stop="showTerms">《用户服务协议》</text>
+          </view>
+        </view>
+
+        <button class="confirm-btn" :class="{ disabled: !agreedPrivacy }" @click="confirmLogin">确认登录</button>
         <text class="skip-btn" @click="skipLogin">跳过，使用默认</text>
       </view>
     </view>
@@ -153,6 +165,19 @@ const templateLoading = ref(false)
 const showEditProfile = ref(false)
 const tempAvatarUrl = ref('')
 const tempNickname = ref('')
+const agreedPrivacy = ref(false)
+
+const toggleAgreement = () => {
+  agreedPrivacy.value = !agreedPrivacy.value
+}
+
+const showPrivacy = () => {
+  uni.navigateTo({ url: '/pages/privacy/index' })
+}
+
+const showTerms = () => {
+  uni.navigateTo({ url: '/pages/terms/index' })
+}
 
 const getStatusBarHeight = () => {
   const systemInfo = uni.getSystemInfoSync()
@@ -190,16 +215,17 @@ const loadTemplates = async () => {
   }
 }
 
-// 使用模板
+// 查看模板详情
 const useTemplate = (template) => {
-  const templateData = {
-    fromTemplate: true,
-    templateName: template.name,
-    size: template.size,
-    beads: template.beads || []
-  }
-  uni.setStorageSync('diy_template_data', templateData)
-  uni.switchTab({ url: '/pages/design/index' })
+  // 存储当前选中的模板信息
+  uni.setStorageSync('current_template_id', template.id)
+  uni.setStorageSync('current_template_data', template)
+  uni.setStorageSync('template_list_cache', templates.value)
+  
+  // 跳转到模板详情页
+  uni.navigateTo({
+    url: '/pages/template/detail'
+  })
 }
 
 const checkLogin = () => {
@@ -224,6 +250,10 @@ const onNicknameBlur = (e) => {
 }
 
 const confirmLogin = () => {
+  if (!agreedPrivacy.value) {
+    uni.showToast({ title: '请先阅读并勾选同意协议', icon: 'none' })
+    return
+  }
   const userInfo = {
     nickName: tempNickname.value || '微信用户',
     avatarUrl: tempAvatarUrl.value || ''
@@ -232,6 +262,10 @@ const confirmLogin = () => {
 }
 
 const skipLogin = () => {
+  if (!agreedPrivacy.value) {
+    uni.showToast({ title: '请先阅读并勾选同意协议', icon: 'none' })
+    return
+  }
   const userInfo = { nickName: '微信用户', avatarUrl: '' }
   performLogin(userInfo)
 }
@@ -254,14 +288,27 @@ const performLogin = (userInfo) => {
   })
 }
 
-const onBannerClick = (item) => {
-  if (item.link) {
-    const tabbarPages = ['/pages/index/index', '/pages/design/index', '/pages/cart/index', '/pages/mine/index']
-    if (tabbarPages.includes(item.link)) {
-      uni.switchTab({ url: item.link })
-    } else {
-      uni.navigateTo({ url: item.link })
-    }
+const onBannerClick = (item, index) => {
+  // 先预览大图
+  const urls = banners.value.map(b => b.imageUrl).filter(Boolean)
+  if (urls.length > 0) {
+    uni.previewImage({
+      current: item.imageUrl,
+      urls: urls,
+      success: () => {
+        // 预览关闭后，如果有链接则跳转
+        if (item.link) {
+          setTimeout(() => {
+            const tabbarPages = ['/pages/index/index', '/pages/design/index', '/pages/cart/index', '/pages/mine/index']
+            if (tabbarPages.includes(item.link)) {
+              uni.switchTab({ url: item.link })
+            } else {
+              uni.navigateTo({ url: item.link })
+            }
+          }, 300)
+        }
+      }
+    })
   }
 }
 
@@ -753,6 +800,49 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
+.agreement-row {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  margin-top: $space-md;
+}
+
+.checkbox {
+  width: 32rpx;
+  height: 32rpx;
+  border: 2rpx solid #D4B48C;
+  border-radius: 6rpx;
+  margin-right: 16rpx;
+  margin-top: 4rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #fff;
+
+  &.checked {
+    background: #D4B48C;
+    border-color: #D4B48C;
+  }
+}
+
+.check-icon {
+  font-size: 22rpx;
+  color: #fff;
+  line-height: 1;
+}
+
+.agreement-text {
+  flex: 1;
+  font-size: 24rpx;
+  color: #9a8b7a;
+  line-height: 1.8;
+
+  .link {
+    color: #D4B48C;
+  }
+}
+
 .confirm-btn {
   width: 100%;
   height: 88rpx;
@@ -766,6 +856,11 @@ onMounted(() => {
   box-shadow: 0 4rpx 16rpx rgba(212, 180, 140, 0.25);
 
   &::after { border: none; }
+
+  &.disabled {
+    background: #e8ddd0;
+    box-shadow: none;
+  }
 }
 
 .skip-btn {

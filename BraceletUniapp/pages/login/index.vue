@@ -40,14 +40,23 @@
         </view>
       </view>
 
-      <button class="login-btn" @click="handleLogin">微信授权登录</button>
-
-      <view class="tips">
-        <text>登录即表示您同意</text>
-        <text class="link" @click="showPrivacy">《隐私政策》</text>
-        <text>和</text>
-        <text class="link" @click="showTerms">《用户协议》</text>
+      <view class="agreement-row" @click="toggleAgreement">
+        <view class="checkbox" :class="{ checked: agreedPrivacy }">
+          <text v-if="agreedPrivacy" class="check-icon">✓</text>
+        </view>
+        <view class="agreement-text">
+          <text>我已阅读并同意</text>
+          <text class="link" @click.stop="showPrivacy">《隐私政策》</text>
+          <text>和</text>
+          <text class="link" @click.stop="showTerms">《用户服务协议》</text>
+        </view>
       </view>
+
+      <button
+        class="login-btn"
+        :class="{ disabled: !agreedPrivacy }"
+        @click="handleLogin"
+      >微信授权登录</button>
     </view>
   </view>
 </template>
@@ -60,6 +69,7 @@ import { wechatLogin } from '../../utils/auth.js';
 const nickName = ref('')
 const avatarUrl = ref('')
 const redirectUrl = ref('')
+const agreedPrivacy = ref(false)
 
 onLoad((options) => {
   // 获取跳转回来的页面地址
@@ -77,7 +87,16 @@ function onChooseAvatar(e) {
   }
 }
 
+function toggleAgreement() {
+  agreedPrivacy.value = !agreedPrivacy.value
+}
+
 async function handleLogin() {
+  if (!agreedPrivacy.value) {
+    uni.showToast({ title: '请先阅读并勾选同意协议', icon: 'none' })
+    return
+  }
+
   if (!nickName.value.trim()) {
     uni.showToast({ title: '请输入昵称', icon: 'none' })
     return
@@ -240,7 +259,7 @@ function showTerms() {
   font-size: 32rpx;
   font-weight: 600;
   border-radius: 16rpx;
-  margin-bottom: 40rpx;
+  margin-bottom: 24rpx;
   
   &::after {
     border: none;
@@ -249,14 +268,50 @@ function showTerms() {
   &:active {
     opacity: 0.9;
   }
+
+  &.disabled {
+    background: #b8dfc8;
+    color: rgba(255, 255, 255, 0.9);
+  }
 }
 
-.tips {
-  text-align: center;
+.agreement-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 32rpx;
+}
+
+.checkbox {
+  width: 32rpx;
+  height: 32rpx;
+  border: 2rpx solid #D4B48C;
+  border-radius: 6rpx;
+  margin-right: 16rpx;
+  margin-top: 4rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #fff;
+
+  &.checked {
+    background: #D4B48C;
+    border-color: #D4B48C;
+  }
+}
+
+.check-icon {
+  font-size: 22rpx;
+  color: #fff;
+  line-height: 1;
+}
+
+.agreement-text {
+  flex: 1;
   font-size: 24rpx;
   color: #9a8b7a;
   line-height: 1.8;
-  
+
   .link {
     color: #D4B48C;
   }

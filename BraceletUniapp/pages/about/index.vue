@@ -3,7 +3,7 @@
     <!-- 品牌区 -->
     <view class="brand-section">
       <view class="brand-logo">
-        <image class="logo-img" src="/static/ack.webp" mode="aspectFit" />
+        <image class="logo-img" src="/static/logo/brand_logo.jpg" mode="aspectFill" />
       </view>
       <view class="brand-name">拾光手串</view>
       <view class="brand-slogan">每一颗珠子，都承载一段时光</view>
@@ -38,14 +38,14 @@
       </view>
       <view class="feature-card">
         <view class="feature-icon" style="background: #EDF5EE;">
-          <text class="u-iconfont" style="font-size: 40rpx; color: #7AB88A;">&#xe636;</text>
+          <text class="u-iconfont" style="font-size: 40rpx; color: #7AB88A;">&#xe617;</text>
         </view>
         <view class="feature-title">天然材质</view>
         <view class="feature-desc">精选天然宝石与木材，品质保障</view>
       </view>
       <view class="feature-card">
         <view class="feature-icon" style="background: #EEF4FC;">
-          <text class="u-iconfont" style="font-size: 40rpx; color: #7A9EC9;">&#xe66f;</text>
+          <text class="u-iconfont" style="font-size: 40rpx; color: #7A9EC9;">&#xe64d;</text>
         </view>
         <view class="feature-title">匠心工艺</view>
         <view class="feature-desc">纯手工打磨，细节精益求精</view>
@@ -65,11 +65,11 @@
         <view class="contact-icon">
           <text class="u-iconfont" style="font-size: 28rpx; color: #ffffff;">&#xe614;</text>
         </view>
-        <text class="contact-text">微信客服：shiguang8899</text>
+        <text class="contact-text">微信客服：{{ wechatId }}</text>
       </view>
       <view class="contact-item">
         <view class="contact-icon">
-          <text class="u-iconfont" style="font-size: 28rpx; color: #ffffff;">&#xe618;</text>
+          <text class="u-iconfont" style="font-size: 28rpx; color: #ffffff;">&#xe635;</text>
         </view>
         <text class="contact-text">服务时间：周一至周六 9:00-18:00</text>
       </view>
@@ -83,6 +83,9 @@
 </template>
 
 <script setup>
+import { CUSTOMER_SERVICE_WECHAT_ID } from '../../config.js'
+
+const wechatId = CUSTOMER_SERVICE_WECHAT_ID
 </script>
 
 <style lang="scss">

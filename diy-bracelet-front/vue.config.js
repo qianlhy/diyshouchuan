@@ -5,7 +5,7 @@ const { defineConfig } = require('@vue/cli-service')
 // VUE_APP_API_TARGET=http://localhost:8080
 // 上线时在 `.env.production` 中设置为远端地址：
 // VUE_APP_API_TARGET=https://springboot-gq7m-207364-6-1391651365.sh.run.tcloudbase.com
-const API_TARGET = process.env.VUE_APP_API_TARGET || 'http://localhost:8080'
+const API_TARGET = process.env.VUE_APP_API_TARGET || 'https://www.tongxinyuan123.com'
 
 module.exports = defineConfig({
   transpileDependencies: true,

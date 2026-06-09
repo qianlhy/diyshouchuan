@@ -27,6 +27,7 @@ export {
 
 
 
+
     // 管理员
     deliveryOrder, getAddressList,
     // 轮播图
@@ -36,13 +37,13 @@ export {
     // 商品
     getProductList,
     // 店铺
-    getShopStatus, loginWithWeixinCode, orderCreate, orderDetail, orderList, orderPay, payOrder, productDetail, productList, refundOrder, reminderOrder, repetitionOrder, setDefaultAddress, subCartItem,
+    getShopStatus, getTemplateDetail,
+    // DIY模板
+    getTemplateList, loginWithWeixinCode, orderCreate, orderDetail, orderList, orderPay, payOrder, productDetail, productList, refundOrder, reminderOrder, repetitionOrder, setDefaultAddress, subCartItem,
     // 订单
     submitOrder,
     // 登录
-    wechatLogin,
-    // DIY模板
-    getTemplateList, getTemplateDetail
+    wechatLogin
 } from './api.js'
 
 import { STORAGE_TOKEN_KEY, STORAGE_USER_KEY } from '../config.js'

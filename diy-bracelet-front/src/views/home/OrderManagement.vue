@@ -113,13 +113,13 @@
           </el-tag>
         </div>
         <div class="order-detail-top">
-          <div class="order-detail-left" v-if="currentOrder.productImage">
+          <div class="order-detail-left" v-if="orderProductImageUrl">
             <div class="order-image-wrapper">
               <el-image
                 class="order-image"
-                :src="getImageUrl(currentOrder.productImage)"
+                :src="orderProductImageUrl"
                 fit="contain"
-                :preview-src-list="[getImageUrl(currentOrder.productImage)]">
+                :preview-src-list="[orderProductImageUrl]">
               </el-image>
             </div>
           </div>
@@ -368,6 +368,7 @@
 
 <script>
 import { adminRefund, exportOrders, getOrderDetail, getOrderList, updateOrderStatus } from '@/api/admin'
+import { getImageUrl, getOrderProductImage } from '@/utils/image'
 import * as XLSX from 'xlsx'
 
 export default {
@@ -389,6 +390,7 @@ export default {
       detailDialogVisible: false,
       updateStatusDialogVisible: false,
       currentOrder: null,
+      orderProductImageUrl: '',
       selectedOrder: null,
       newStatus: null,
       trackingNumber: '',
@@ -614,6 +616,7 @@ export default {
       try {
         const res = await getOrderDetail(order.orderId)
         this.currentOrder = res.data.order
+        this.orderProductImageUrl = getOrderProductImage(this.currentOrder)
         this.detailDialogVisible = true
       } catch (error) {
         console.error('获取订单详情失败:', error)
@@ -700,15 +703,8 @@ export default {
       }
       return ''
     },
-    getImageUrl (relativePath) {
-      if (!relativePath) return ''
-      if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) return relativePath
-      const base = (process.env.VUE_APP_API_TARGET || process.env.VUE_APP_BASE_URL || window.location.origin || '').replace(/\/$/, '')
-      if (relativePath.startsWith('/')) {
-        return `${base}${relativePath}`
-      }
-      return `${base}/${relativePath}`
-    },
+    getImageUrl,
+    getOrderProductImage,
 
     // 导出订单到Excel
     async exportOrders () {

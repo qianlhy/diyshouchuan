@@ -47,6 +47,11 @@ public interface OrderService {
     OrderVO getDetails(Long id);
 
     /**
+     * 根据商户订单号查询订单详情
+     */
+    OrderVO getDetailsByOrderNo(String orderNo);
+
+    /**
      * 取消订单
      */
     void update(Long id);

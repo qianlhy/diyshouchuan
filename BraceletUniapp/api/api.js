@@ -223,12 +223,18 @@ export function getOrderList(params = {}) {
 
 /**
  * 查询订单详情
- * @param {Number} id 订单ID
+ * @param {Number|String} idOrNo 订单ID 或 商户订单号（如 DIY1780...）
  * @returns {Promise} { order: {} }
  */
-export function getOrderDetail(id) {
-  // 接口期望参数名为 orderId
-  return get(API_PATHS.ORDER_DETAIL, { orderId: id })
+export function getOrderDetail(idOrNo) {
+  const value = idOrNo == null ? '' : String(idOrNo).trim()
+  if (!value) {
+    return Promise.reject(new Error('订单参数不能为空'))
+  }
+  if (/[A-Za-z]/.test(value)) {
+    return get(API_PATHS.ORDER_DETAIL, { orderNo: value })
+  }
+  return get(API_PATHS.ORDER_DETAIL, { orderId: Number(value) })
 }
 
 /**
@@ -428,55 +434,61 @@ export function setDefaultAddress(id) {
 }
 
 /**
- * 上传文件
+ * 将静态资源路径转为可读取的本地路径
+ */
+function ensureUploadableFilePath(filePath) {
+  return new Promise((resolve, reject) => {
+    if (!filePath) {
+      reject(new Error('文件路径为空'))
+      return
+    }
+    if (/^wxfile:/.test(filePath) || /^https?:\/\/tmp/.test(filePath) || filePath.includes('tmp')) {
+      resolve(filePath)
+      return
+    }
+    uni.getImageInfo({
+      src: filePath,
+      success: (res) => resolve(res.path || filePath),
+      fail: (err) => reject(new Error('无法读取待上传图片: ' + (err.errMsg || '未知错误')))
+    })
+  })
+}
+
+function readFileAsBase64(filePath) {
+  return new Promise((resolve, reject) => {
+    uni.getFileSystemManager().readFile({
+      filePath,
+      encoding: 'base64',
+      success: (res) => resolve(res.data),
+      fail: (err) => reject(new Error('读取图片失败: ' + (err.errMsg || '未知错误')))
+    })
+  })
+}
+
+function guessExtension(filePath) {
+  if (!filePath) return '.jpg'
+  const lower = filePath.toLowerCase()
+  if (lower.endsWith('.png')) return '.png'
+  if (lower.endsWith('.webp')) return '.webp'
+  return '.jpg'
+}
+
+/**
+ * 上传文件（使用 JSON + Base64，走 request 合法域名，避免 uploadFile 域名限制）
  * @param {string} filePath - 文件临时路径
  * @param {string} [scene] - 场景参数 (可选)
  * @returns {Promise} { url: string }
  */
 export function uploadFile(filePath, scene) {
-  return new Promise((resolve, reject) => {
-    let url = API_BASE_URL + '/user/common/upload'
-    if (scene) {
-      url += `?scene=${scene}`
-    }
-    
-    uni.uploadFile({
-      url: url,
-      filePath: filePath,
-      name: 'file',
-      header: {
-        [TOKEN_HEADER]: uni.getStorageSync(STORAGE_TOKEN_KEY) || ''
-      },
-      success: (res) => {
-        console.log('Upload response raw:', res.data)
-        if (res.statusCode === 200) {
-          try {
-            const data = JSON.parse(res.data)
-            console.log('Upload response parsed:', data)
-            // 兼容多种成功状态码：0(新接口), 1(旧接口), 200(标准HTTP风格)
-            if (data.code === RESPONSE_CODE.SUCCESS || 
-                data.code === RESPONSE_CODE.SUCCESS_NEW || 
-                data.code === 200) {
-              resolve(data.data)
-            } else {
-              console.error('上传业务失败:', data)
-              reject(new Error(data.msg || '上传失败'))
-            }
-          } catch (e) {
-            console.error('解析上传响应失败:', e)
-            reject(e)
-          }
-        } else {
-          console.error('上传HTTP失败:', res.statusCode)
-          reject(new Error(`上传失败: ${res.statusCode}`))
-        }
-      },
-      fail: (err) => {
-        console.error('上传请求失败:', err)
-        reject(err)
-      }
+  return ensureUploadableFilePath(filePath)
+    .then((resolvedPath) => readFileAsBase64(resolvedPath))
+    .then((base64) => {
+      return post('/user/common/upload-base64', {
+        base64,
+        scene: scene || 'diy_design',
+        extension: guessExtension(filePath)
+      }, true)
     })
-  })
 }
 
 /**

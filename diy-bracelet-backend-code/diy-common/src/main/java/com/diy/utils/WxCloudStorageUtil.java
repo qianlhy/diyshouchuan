@@ -106,9 +106,10 @@ public class WxCloudStorageUtil {
         try {
             cosClient = createCOSClient();
 
-            COSObject cosObject = cosClient.getObject(bucketName, objectName);
+            String cosKey = toCosObjectKey(objectName);
+            COSObject cosObject = cosClient.getObject(bucketName, cosKey);
             if (cosObject == null) {
-                log.warn("对象存储中未找到文件: {}", objectName);
+                log.warn("对象存储中未找到文件: {}", cosKey);
                 return null;
             }
 
@@ -120,7 +121,7 @@ public class WxCloudStorageUtil {
                     outputStream.write(buffer, 0, bytesRead);
                 }
                 byte[] data = outputStream.toByteArray();
-                log.info("从对象存储下载文件成功: {}，大小={}字节", objectName, data.length);
+                log.info("从对象存储下载文件成功: {}，大小={}字节", cosKey, data.length);
                 return data;
             }
         } catch (Exception e) {
@@ -137,25 +138,47 @@ public class WxCloudStorageUtil {
     public void delete(String fileUrlOrObjectName) {
         if (fileUrlOrObjectName == null || fileUrlOrObjectName.trim().isEmpty()) return;
 
-        String objectName = fileUrlOrObjectName.trim();
-        String prefix = "/admin/common/image/";
-        if (objectName.startsWith(prefix)) {
-            objectName = objectName.substring(prefix.length());
-        }
-        if (objectName.startsWith("/")) {
-            objectName = objectName.substring(1);
-        }
+        String cosKey = toCosObjectKey(fileUrlOrObjectName.trim());
 
         COSClient cosClient = null;
         try {
             cosClient = createCOSClient();
-            cosClient.deleteObject(bucketName, objectName);
-            log.info("从对象存储删除文件成功: {}", objectName);
+            cosClient.deleteObject(bucketName, cosKey);
+            log.info("从对象存储删除文件成功: {}", cosKey);
         } catch (Exception e) {
-            log.error("从对象存储删除文件失败: {}", objectName, e);
+            log.error("从对象存储删除文件失败: {}", cosKey, e);
         } finally {
             if (cosClient != null) cosClient.shutdown();
         }
+    }
+
+    /**
+     * 将数据库/接口中的图片路径转换为 COS 对象键
+     */
+    private String toCosObjectKey(String fileUrlOrObjectName) {
+        String objectName = fileUrlOrObjectName.trim();
+
+        String cosPrefix = "https://" + bucketName + ".cos." + region + ".myqcloud.com";
+        if (objectName.startsWith(cosPrefix)) {
+            objectName = objectName.substring(cosPrefix.length());
+        }
+
+        String apiPrefix = "/admin/common/image/";
+        if (objectName.startsWith(apiPrefix)) {
+            objectName = objectName.substring(apiPrefix.length());
+        } else if (objectName.startsWith("admin/common/image/")) {
+            objectName = objectName.substring("admin/common/image/".length());
+        }
+
+        if (objectName.startsWith("/")) {
+            objectName = objectName.substring(1);
+        }
+
+        if (!objectName.startsWith("admin/common/image/")) {
+            objectName = "admin/common/image/" + objectName;
+        }
+
+        return objectName;
     }
 
     // ==================== 内部方法 ====================

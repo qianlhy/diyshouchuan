@@ -2,10 +2,12 @@ package com.diy.config;
 
 import com.diy.interceptor.JwtTokenAdminInterceptor;
 import com.diy.interceptor.JwtTokenUserInterceptor;
+import com.diy.utils.LocalFileUtil;
 import com.diy.json.JacksonObjectMapper;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -29,6 +31,12 @@ import java.util.List;
 @Slf4j
 public class WebMvcConfiguration extends WebMvcConfigurationSupport {
 
+    @Value("${local.file.base-path}")
+    private String basePath;
+
+    @Value("${local.file.diy-design-dir:}")
+    private String diyDesignDir;
+
     @Autowired
     private JwtTokenAdminInterceptor jwtTokenAdminInterceptor;
     @Autowired
@@ -44,7 +52,9 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
         registry.addInterceptor(jwtTokenAdminInterceptor)
                 .addPathPatterns("/admin/**")
                 .excludePathPatterns("/admin/login")
-                .excludePathPatterns("/admin/common/image/**");
+                .excludePathPatterns("/admin/common/image/**")
+                .excludePathPatterns("/admin/common/diy-design/**")
+                .excludePathPatterns("/diy-images/**");
 
         registry.addInterceptor(jwtTokenUserInterceptor)
                 .addPathPatterns("/user/**")
@@ -62,6 +72,8 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
                 .excludePathPatterns("/user/template/**")
                 // 客服二维码公开接口
                 .excludePathPatterns("/user/common/customer-service-qr")
+                .excludePathPatterns("/user/common/diy-design/**")
+                .excludePathPatterns("/diy-images/**")
                 .excludePathPatterns("/notify/paySuccess")
                 .excludePathPatterns("/notify/refundSuccess");
     }
@@ -83,6 +95,18 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
         registry.addResourceHandler("/banner/**").addResourceLocations("classpath:/static/banner/");
         registry.addResourceHandler("/tabbar/**").addResourceLocations("classpath:/static/tabbar/");
         registry.addResourceHandler("/customer-service/**").addResourceLocations("classpath:/static/customer-service/");
+
+        String diyDir = resolveDiyDesignDir();
+        log.info("DIY 设计图静态映射: /diy-images/** -> file:{}/", diyDir);
+        registry.addResourceHandler("/diy-images/**")
+                .addResourceLocations("file:" + diyDir + "/");
+    }
+
+    private String resolveDiyDesignDir() {
+        if (diyDesignDir != null && !diyDesignDir.trim().isEmpty()) {
+            return new java.io.File(diyDesignDir.trim()).getAbsolutePath();
+        }
+        return new java.io.File(LocalFileUtil.resolveStorageRoot(basePath), "uploads/diy_design").getAbsolutePath();
     }
 
     /**

@@ -35,7 +35,7 @@
             {{ regionText || '请选择省市区' }}
           </view>
         </picker>
-        <view class="arrow">></view>
+        <text class="arrow">›</text>
       </view>
 
       <view class="form-item">

@@ -79,6 +79,11 @@ async function loadProducts(cid) {
   try {
     const res = await productList(cid)
     let productData = Array.isArray(res) ? res : (res.data || [])
+    // 过滤掉测试商品
+    productData = productData.filter(p => {
+      const title = (p.title || '').toLowerCase()
+      return !title.includes('测试') && !title.includes('test')
+    })
     products.value = productData.map(p => ({
       ...p,
       coverImage: resolveImageUrl(p.coverImage)

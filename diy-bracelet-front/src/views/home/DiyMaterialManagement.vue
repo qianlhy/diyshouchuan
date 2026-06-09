@@ -163,6 +163,7 @@
 
 <script>
 import { getDiyMaterialList, addDiyMaterial, updateDiyMaterial, deleteDiyMaterial, getColorSeriesList } from '@/api/admin'
+import { getImageUrl } from '@/utils/image'
 
 export default {
   name: 'DiyMaterialManagement',
@@ -349,15 +350,7 @@ export default {
       if (!color) return 'background: #e0e5eb;'
       return `background: ${color};`
     },
-    getImageUrl (relativePath) {
-      if (!relativePath) return ''
-      if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) return relativePath
-      const base = (process.env.VUE_APP_API_TARGET || process.env.VUE_APP_BASE_URL || window.location.origin || '').replace(/\/$/, '')
-      if (relativePath.startsWith('/')) {
-        return `${base}${relativePath}`
-      }
-      return `${base}/${relativePath}`
-    },
+    getImageUrl,
     handleImageUploadSuccess (response, file, fileList) {
       if (response.code === 1) {
         this.materialForm.imageUrl = response.data

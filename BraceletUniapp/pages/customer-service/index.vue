@@ -1,35 +1,32 @@
 <template>
-  <view class="customer-service-page">
+  <view class="page">
     <view class="header">
       <text class="title">联系客服</text>
     </view>
 
     <view class="content">
-      <view class="qr-container" v-if="qrCodeUrl">
-        <image 
-          class="qr-code" 
-          :src="qrCodeUrl" 
+      <view class="qr-container">
+        <image
+          class="qr-code"
+          :src="qrCodeUrl"
           mode="aspectFit"
           show-menu-by-longpress="true"
           @error="onImageError"
-        ></image>
+        />
         <text class="tip">长按识别二维码添加客服微信</text>
       </view>
 
-      <view class="empty" v-else-if="!loading">
-        <text class="empty-text">客服二维码暂未配置</text>
-        <text class="empty-tip">请联系管理员设置客服二维码</text>
-      </view>
-
-      <view class="loading" v-if="loading">
-        <text>加载中...</text>
+      <view class="wechat-id-row" @click="copyWechatId">
+        <text class="wechat-id-label">客服微信号</text>
+        <text class="wechat-id-value">{{ wechatId }}</text>
+        <text class="wechat-id-copy">复制</text>
       </view>
     </view>
 
     <view class="tips">
       <view class="tip-item">
         <text class="tip-icon">📱</text>
-        <text class="tip-text">扫描二维码添加客服微信</text>
+        <text class="tip-text">扫描二维码或搜索微信号添加客服</text>
       </view>
       <view class="tip-item">
         <text class="tip-icon">💬</text>
@@ -44,47 +41,23 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { getCustomerServiceQRCode } from '../../api/api.js'
-import { resolveImageUrl } from '../../utils/imageHelper.js'
+import { ref } from 'vue'
+import { CUSTOMER_SERVICE_QR_PATH, CUSTOMER_SERVICE_WECHAT_ID } from '../../config.js'
 
-const loading = ref(true)
-const qrCodeUrl = ref('')
+const qrCodeUrl = ref(CUSTOMER_SERVICE_QR_PATH)
+const wechatId = ref(CUSTOMER_SERVICE_WECHAT_ID)
 
-onMounted(() => {
-  loadQRCode()
-})
-
-async function loadQRCode() {
-  loading.value = true
-  try {
-    const res = await getCustomerServiceQRCode()
-    console.log('客服二维码响应:', res)
-    
-    if (res) {
-      qrCodeUrl.value = resolveImageUrl(res)
-      console.log('客服二维码URL:', qrCodeUrl.value)
-    } else {
-      console.log('未获取到客服二维码')
-      qrCodeUrl.value = ''
+function copyWechatId() {
+  uni.setClipboardData({
+    data: wechatId.value,
+    success: () => {
+      uni.showToast({ title: '微信号已复制', icon: 'success' })
     }
-  } catch (error) {
-    console.error('获取客服二维码失败:', error)
-    uni.showToast({
-      title: '获取客服信息失败',
-      icon: 'none'
-    })
-  } finally {
-    loading.value = false
-  }
+  })
 }
 
-function onImageError(e) {
-  console.error('图片加载失败:', e)
-  uni.showToast({
-    title: '二维码加载失败',
-    icon: 'none'
-  })
+function onImageError() {
+  uni.showToast({ title: '二维码加载失败', icon: 'none' })
 }
 </script>
 
@@ -116,8 +89,6 @@ function onImageError(e) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 500rpx;
-  justify-content: center;
   box-shadow: $shadow-sm;
   border: 1rpx solid $border-light;
   margin-bottom: $space-lg;
@@ -127,12 +98,13 @@ function onImageError(e) {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-bottom: $space-lg;
 }
 
 .qr-code {
   width: 400rpx;
   height: 400rpx;
-  margin-bottom: $space-lg;
+  margin-bottom: $space-md;
   border-radius: $radius-lg;
   background: $bg-secondary;
 }
@@ -143,27 +115,34 @@ function onImageError(e) {
   text-align: center;
 }
 
-.empty {
+.wechat-id-row {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: $space-md;
+  gap: $space-sm;
+  width: 100%;
+  padding: $space-md $space-lg;
+  background: $bg-secondary;
+  border-radius: $radius-lg;
+  box-sizing: border-box;
 }
 
-.empty-text {
-  font-size: $text-lg;
-  color: $text-primary;
-  font-weight: $font-medium;
-}
-
-.empty-tip {
+.wechat-id-label {
   font-size: $text-sm;
-  color: $text-tertiary;
+  color: $text-secondary;
+  flex-shrink: 0;
 }
 
-.loading {
-  color: $text-tertiary;
-  font-size: $text-base;
+.wechat-id-value {
+  flex: 1;
+  font-size: $text-md;
+  font-weight: $font-semibold;
+  color: $text-primary;
+}
+
+.wechat-id-copy {
+  font-size: $text-sm;
+  color: #D4B48C;
+  flex-shrink: 0;
 }
 
 .tips {

@@ -95,7 +95,7 @@
       <view class="menu-item" @click="about">
         <view class="menu-left">
           <view class="menu-icon" style="background: #F5F0EC;">
-            <text class="u-iconfont" style="font-size: 36rpx; color: #B8A99A;">&#xe71e;</text>
+            <text class="u-iconfont" style="font-size: 36rpx; color: #B8A99A;">&#xe66f;</text>
           </view>
           <text class="menu-label">关于我们</text>
         </view>

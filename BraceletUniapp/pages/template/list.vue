@@ -79,23 +79,16 @@ async function loadTemplates() {
   }
 }
 
-// 使用模板
+// 查看模板详情
 function useTemplate(template) {
-  // 将模板数据存储到本地
-  uni.setStorageSync('diy_template_data', {
-    beads: template.beads || [],
-    size: template.size || 16,
-    fromTemplate: true,
-    templateName: template.name
-  })
-
-  // 跳转到制作台
-  uni.switchTab({
-    url: '/pages/design/index',
-    success: () => {
-      // 发送事件通知制作台加载模板
-      uni.$emit('loadTemplateData')
-    }
+  // 存储当前选中的模板信息
+  uni.setStorageSync('current_template_id', template.id)
+  uni.setStorageSync('current_template_data', template)
+  uni.setStorageSync('template_list_cache', templates.value)
+  
+  // 跳转到模板详情页
+  uni.navigateTo({
+    url: '/pages/template/detail'
   })
 }
 

@@ -58,7 +58,7 @@
         <view class="order-footer">
           <view class="order-time">{{ formatTime(order.createTime) }}</view>
           <view class="order-right">
-            <text class="order-total">¥{{ order.totalAmount }}</text>
+            <text class="order-total">¥{{ order.totalAmount != null ? Number(order.totalAmount).toFixed(2) : '0.00' }}</text>
             <view class="order-actions">
               <view v-if="order.status === 0" class="action-btn cancel-btn" @click.stop="cancelOrder(order)">取消</view>
               <view v-if="order.status === 0" class="action-btn pay-btn" @click.stop="goPay(order)">去支付</view>
@@ -87,8 +87,10 @@
 <script setup>
 import { onLoad, onPullDownRefresh, onReachBottom } from '@dcloudio/uni-app'
 import { reactive, ref } from 'vue'
-import { cancelOrder as apiCancelOrder, completeOrder, orderList, orderPay } from '../../api/index.js'
+import { cancelOrder as apiCancelOrder, completeOrder, orderList } from '../../api/index.js'
 import { resolveImageUrl } from '../../utils/imageHelper.js'
+import { formatOrderTime, normalizeOrder } from '../../utils/orderHelper.js'
+import { handleOrderPayment } from '../../utils/paymentHelper.js'
 
 const orders = ref([])
 const activeStatus = ref(-1)
@@ -103,11 +105,7 @@ const STATUS_CLASS = ['status-wait', 'status-paid', 'status-shipped', 'status-do
 function statusText(status) { return STATUS_TEXT[status] || '未知' }
 function statusClass(status) { return STATUS_CLASS[status] || '' }
 
-function formatTime(time) {
-  if (!time) return ''
-  const d = new Date(time)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
-}
+const formatTime = formatOrderTime
 
 function goDetail(order) {
   uni.navigateTo({ url: `/pages/order/detail?id=${order.id}` })
@@ -135,14 +133,21 @@ async function loadOrders(status = -1, pageNum = 1, reset = false) {
       else list = Array.isArray(res.data) ? res.data : (res.data.records || [])
     }
 
-    list = list.map(o => ({
-      ...o,
-      items: (o.items || []).map(item => ({
+    list = list.map(o => {
+      const normalized = normalizeOrder(o)
+      const items = (normalized.items || []).map(item => ({
         ...item,
-        imageUrl: resolveImageUrl(item.imageUrl || item.image),
-        image: resolveImageUrl(item.imageUrl || item.image)
+        imageUrl: resolveImageUrl(item.imageUrl || item.image || normalized.productImage),
+        image: resolveImageUrl(item.imageUrl || item.image || normalized.productImage)
       }))
-    }))
+      if (!items.length && normalized.productImage) {
+        items.push({
+          imageUrl: resolveImageUrl(normalized.productImage),
+          image: resolveImageUrl(normalized.productImage)
+        })
+      }
+      return { ...normalized, items }
+    })
 
     if (reset) orders.value = list
     else orders.value = [...orders.value, ...list]
@@ -189,51 +194,10 @@ async function cancelOrder(order) {
   })
 }
 
-async function goPay(order) {
-  uni.showLoading({ title: '正在发起支付...', mask: true })
-  
-  try {
-    // 调用后端获取支付参数
-    const payRes = await orderPay(order.orderNo, 1) // 1=微信支付
-    console.log('支付参数:', payRes)
-    
-    if (!payRes || !payRes.nonceStr) {
-      uni.hideLoading()
-      uni.showToast({ title: '获取支付信息失败', icon: 'none' })
-      return
-    }
-    
-    // 调起微信支付
-    uni.requestPayment({
-      provider: 'wxpay',
-      timeStamp: payRes.timeStamp || String(Date.now()),
-      nonceStr: payRes.nonceStr,
-      package: payRes.packageValue || payRes.package,
-      signType: payRes.signType || 'RSA',
-      paySign: payRes.paySign,
-      success: (res) => {
-        uni.hideLoading()
-        uni.showToast({ title: '支付成功', icon: 'success' })
-        // 刷新订单列表
-        setTimeout(() => {
-          loadOrders(activeStatus.value, 1, true)
-        }, 1500)
-      },
-      fail: (err) => {
-        uni.hideLoading()
-        console.error('支付失败:', err)
-        if (err.errCode === -2) {
-          uni.showToast({ title: '用户取消支付', icon: 'none' })
-        } else {
-          uni.showToast({ title: '支付失败', icon: 'none' })
-        }
-      }
-    })
-  } catch (e) {
-    uni.hideLoading()
-    console.error('发起支付失败:', e)
-    uni.showToast({ title: e.message || '支付失败', icon: 'none' })
-  }
+function goPay(order) {
+  handleOrderPayment(order, () => {
+    loadOrders(activeStatus.value, 1, true)
+  })
 }
 
 function viewExpress(order) {

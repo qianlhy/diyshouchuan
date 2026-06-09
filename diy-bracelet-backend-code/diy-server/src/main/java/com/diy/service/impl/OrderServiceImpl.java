@@ -16,6 +16,7 @@ import com.diy.mapper.*;
 import com.diy.result.PageResult;
 import com.diy.service.CartItemService;
 import com.diy.service.OrderService;
+import com.diy.service.WeChatOrderShippingService;
 import com.diy.utils.WeChatPayUtil;
 import com.diy.utils.WxCloudStorageUtil;
 import com.diy.vo.OrderCreateVO;
@@ -58,6 +59,9 @@ public class OrderServiceImpl implements OrderService {
     private DiyMaterialMapper diyMaterialMapper; // 新增：用于材料库存操作
     @Autowired
     private WxCloudStorageUtil wxCloudStorageUtil; // 用于删除DIY设计图片
+
+    @Autowired
+    private WeChatOrderShippingService weChatOrderShippingService;
 
     @Value("${dev.mock-payment:false}")
     private Boolean mockPayment;
@@ -683,6 +687,26 @@ public class OrderServiceImpl implements OrderService {
         }
         
         orderMapper.update(updateOrder);
+
+        if (Orders.SHIPPED.equals(status)) {
+            syncWeChatShippingInfo(order, orderStatusUpdateDTO.getTrackingNumber());
+        }
+    }
+
+    private void syncWeChatShippingInfo(Orders order, String trackingNumber) {
+        if (order == null || order.getTransactionId() == null || order.getTransactionId().trim().isEmpty()) {
+            log.info("订单 {} 非微信支付订单，跳过微信发货同步", order != null ? order.getOrderNo() : null);
+            return;
+        }
+        User user = userMapper.getById(order.getUserId());
+        String itemDesc = order.getDiyName();
+        if (itemDesc == null || itemDesc.trim().isEmpty()) {
+            List<OrderItem> items = orderDetailMapper.getByOrderId(order.getId());
+            if (items != null && !items.isEmpty() && items.get(0) != null) {
+                itemDesc = items.get(0).getTitle();
+            }
+        }
+        weChatOrderShippingService.uploadShippingInfo(order, user, trackingNumber, itemDesc);
     }
 
     @Override
@@ -705,6 +729,15 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         return orderVO;
+    }
+
+    @Override
+    public OrderVO getDetailsByOrderNo(String orderNo) {
+        Orders orders = orderMapper.getByNumber(orderNo);
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        return getDetails(orders.getId());
     }
 
     @Transactional

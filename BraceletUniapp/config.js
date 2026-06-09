@@ -1,21 +1,14 @@
 // API配置文件 - 根据后端接口文档配置
 // 基于 api-documentation.json
 
-// 开发环境 - 根据接口文档
-// 统一指向云托管后端地址，方便开发与真机调试
-// const DEV_API_BASE_URL = 'https://cloud.xiaotangstory.top'
-const DEV_API_BASE_URL = 'https://abc.052909.com'
-// const DEV_API_BASE_URL = "http://localhost:8080"
+// 接口域名（开发/体验版/正式版统一，避免发行包 NODE_ENV=production 时地址为 undefined）
+// 体验版、正式版必须在微信公众平台配置该域名为 request 合法域名
+export const API_BASE_URL = 'https://www.tongxinyuan123.com'
 
-// 生产环境
-const PROD_API_BASE_URL = 'https://abc.052909.com'
-//const PROD_API_BASE_URL = 'https://cloud.xiaotangstory.top'
-
-// 判断当前环境
-const isDevelopment = process.env.NODE_ENV === 'development'
-
-// 导出当前使用的API地址
-export const API_BASE_URL = isDevelopment ? DEV_API_BASE_URL : PROD_API_BASE_URL
+// 客服微信号
+export const CUSTOMER_SERVICE_WECHAT_ID = 'tongxinyuan797980'
+// 客服二维码（本地静态资源）
+export const CUSTOMER_SERVICE_QR_PATH = '/static/kefu.jpg'
 
 // JWT Token认证配置
 export const TOKEN_HEADER = 'authentication'  // 请求头中token的key
@@ -101,6 +94,12 @@ export const API_PATHS = {
   DIY_MATERIAL_LIST: '/user/design/material/list',
   // 从DIY设计创建订单
   DIY_ORDER_CREATE: '/user/design/order/create',
+  
+  // ==================== DIY模板模块 ====================
+  // 查询模板列表
+  TEMPLATE_LIST: '/user/template/list',
+  // 查询模板详情
+  TEMPLATE_DETAIL: '/user/template/detail',
 
   // ==================== 地址管理模块 ====================
   // 添加/修改地址

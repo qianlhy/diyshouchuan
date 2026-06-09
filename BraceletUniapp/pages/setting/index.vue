@@ -120,22 +120,11 @@ function checkUpdate() {
   }, 1000)
 }
 function showPrivacy() {
-  uni.showModal({
-    title: '隐私政策',
-    content: '我们非常重视您的隐私保护，详细政策请访问官网查看。',
-    showCancel: false,
-    confirmColor: '#D4B48C'
-  })
+  uni.navigateTo({ url: '/pages/privacy/index' })
 }
 
-// 用户协议
 function showUserAgreement() {
-  uni.showModal({
-    title: '用户协议',
-    content: '使用本应用即表示您同意我们的用户协议，详细内容请访问官网查看。',
-    showCancel: false,
-    confirmColor: '#D4B48C'
-  })
+  uni.navigateTo({ url: '/pages/terms/index' })
 }
 
 // 关于我们

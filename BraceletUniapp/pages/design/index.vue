@@ -39,6 +39,10 @@
       
       <!-- 中心画布 -->
       <view class="canvas-container">
+        <!-- 尺寸显示标签 -->
+        <view class="size-badge">
+          <text class="size-badge-text">{{ currentBraceletSize }} / {{ maxBraceletSize }}cm</text>
+        </view>
         <view 
           class="canvas"
           @touchstart="onTouchStart"
@@ -466,14 +470,14 @@ uploadFile,
 } from '../../api/api.js'
 import { isLoggedIn } from '../../api/index.js'
 import { updateCartBadgeNow } from '../../utils/cartBadge.js'
-import { resolveImageUrl } from '../../utils/imageHelper.js'
+import { extractUploadPath, resolveImageUrl } from '../../utils/imageHelper.js'
 
 // 实例
 const instance = getCurrentInstance()
 
 const isMounted = ref(false)
 const didInit = ref(false)
-const logoPath = '/static/logo/final_logo.jpg'
+const logoPath = '/static/logo/brand_logo.jpg'
 const hasLogo = ref(true)
 console.log('Logo Path set to absolute:', logoPath)
 
@@ -636,8 +640,10 @@ function isPendant(bead) {
   return title.endsWith('吊坠')
 }
 
-function onLogoError() {
-  hasLogo.value = false
+function onLogoError(e) {
+  console.error('Logo图片加载失败:', logoPath, e)
+  // 不隐藏logo，显示占位符让用户知道有问题
+  // hasLogo.value = false
 }
 
 // 判断是否为配饰（花托、隔片等，不计算在长度内，之间没有间隙）
@@ -732,6 +738,24 @@ watch(rawLayoutRadius, (val) => {
 
 watch(selectedSize, () => {
   maxRadiusHistory.value = 0
+})
+
+// 当前手串实际周长 (所有珠子宽度之和，单位cm)
+const currentBraceletSize = computed(() => {
+  if (!beads.value.length) return 0
+  const totalWidthMm = beads.value.reduce((sum, b) => {
+    if (isPendant(b) || isSpacerOrSeparator(b)) {
+      return sum + 3 // 吊坠和配饰占3mm
+    }
+    return sum + Number(b?.size || 8)
+  }, 0)
+  return (totalWidthMm / 10).toFixed(1) // 转换为cm，保留1位小数
+})
+
+// 最大手串周长 (基于手围尺寸，单位cm)
+const maxBraceletSize = computed(() => {
+  // 手围 + 2.4cm 松量 = 手串内周长
+  return (selectedSize.value + 2.4).toFixed(1)
 })
 
 // 动态缩放画布，确保大尺寸也能完整显示
@@ -1400,18 +1424,8 @@ async function addToCartFromDesign() {
     uni.showLoading({ title: '上传设计图...', mask: true })
     const uploadRes = await uploadFile(tempFilePath, 'diy_design')
     
-    // 获取返回的图片路径
-    let rawPath = ''
-    if (typeof uploadRes === 'string') {
-      rawPath = uploadRes
-    } else if (uploadRes) {
-      rawPath = uploadRes.url || uploadRes.path || uploadRes.fileUrl || uploadRes.fileName || ''
-      if (!rawPath && uploadRes.data) {
-        rawPath = uploadRes.data.url || uploadRes.data.path || ''
-      }
-    }
+    const rawPath = extractUploadPath(uploadRes)
     
-    // 确保是完整的URL
     const designImageUrl = rawPath ? resolveImageUrl(rawPath) : ''
 
     // 2. 计算DIY商品的总价和总数量
@@ -2166,30 +2180,16 @@ async function submitOrder() {
     uni.showLoading({ title: '上传设计图...' })
     const uploadRes = await uploadFile(tempFilePath, 'diy_design')
     console.log('Design upload result:', uploadRes)
-    
-    // 获取返回的图片路径
-    let rawPath = ''
-    if (typeof uploadRes === 'string') {
-        rawPath = uploadRes
-    } else if (uploadRes) {
-        // 尝试多种可能的字段名
-        rawPath = uploadRes.url || uploadRes.path || uploadRes.fileUrl || uploadRes.fileName || ''
-        if (!rawPath && uploadRes.data) {
-             rawPath = uploadRes.data.url || uploadRes.data.path || ''
-        }
-    }
-    
+
+    const rawPath = extractUploadPath(uploadRes)
     console.log('Extracted raw path:', rawPath)
 
-    // 确保是完整的URL
-    let designUrl = ''
-    if (rawPath) {
-        // 使用 resolveImageUrl 统一处理，它会自动判断是否需要添加 /admin/common/image 前缀
-        designUrl = resolveImageUrl(rawPath)
+    if (!rawPath) {
+      uni.hideLoading()
+      uni.showToast({ title: '设计图上传失败，请重试', icon: 'none' })
+      return
     }
-    
-    console.log('Final design URL:', designUrl)
-    
+
     uni.hideLoading()
     
     // 生成详细的珠子排列描述
@@ -2210,7 +2210,8 @@ async function submitOrder() {
     // Store Data
     const orderData = {
         items: orderItems.value,
-        designImage: designUrl,
+        designImage: rawPath,
+        designImagePreview: tempFilePath,
         categories: activeCategory.value,
         classificationDetail1: null, // 废弃
         classificationDetail2: null, // 废弃
@@ -2504,6 +2505,27 @@ onLoad((options) => {
   padding-bottom: 100rpx;
 }
 
+/* 尺寸显示标签 */
+.size-badge {
+  position: absolute;
+  top: 20rpx;
+  right: 20rpx;
+  background: linear-gradient(135deg, rgba(201, 168, 108, 0.9) 0%, rgba(180, 145, 95, 0.9) 100%);
+  padding: 12rpx 20rpx;
+  border-radius: 30rpx;
+  box-shadow: 0 4rpx 16rpx rgba(201, 168, 108, 0.3);
+  z-index: 10;
+  min-width: 120rpx;
+  text-align: center;
+}
+
+.size-badge-text {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+  letter-spacing: 1rpx;
+}
+
 .canvas {
   width: 560rpx;
   height: 560rpx;
@@ -2557,7 +2579,8 @@ onLoad((options) => {
   width: 160rpx;
   height: 160rpx;
   margin-bottom: 12rpx;
-  opacity: 0.8;
+  opacity: 0.4;
+  filter: grayscale(30%);
 }
 
 .logo-name {
@@ -2599,21 +2622,21 @@ onLoad((options) => {
 
 .tool-bar {
   flex: 1;
-  height: 68rpx;
+  height: 64rpx;
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: 10rpx;
   padding: 0 8rpx;
   transition: all 0.3s ease;
   
   .tool-item {
     flex: none;
-    height: 52rpx;
+    height: 48rpx;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    padding: 0 20rpx;
+    padding: 0 16rpx;
     background: $bg-secondary;
     border: 1rpx solid transparent;
     border-radius: $radius-full;
@@ -2625,16 +2648,16 @@ onLoad((options) => {
     }
     
     .tool-icon-img {
-      font-size: 24rpx;
-      line-height: 24rpx;
-      margin-right: 8rpx;
+      font-size: 22rpx;
+      line-height: 22rpx;
+      margin-right: 6rpx;
       color: $text-secondary;
     }
     
     .tool-text {
       margin-top: 0;
-      font-size: 24rpx;
-      line-height: 24rpx;
+      font-size: 22rpx;
+      line-height: 22rpx;
       color: $text-secondary;
       font-weight: $font-medium;
     }

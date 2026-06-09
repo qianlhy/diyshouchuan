@@ -57,6 +57,7 @@
 
 <script>
 import { getCustomerServiceQR, deleteCustomerServiceQR } from '@/api/admin'
+import { getImageUrl } from '@/utils/image'
 
 export default {
   name: 'CustomerServiceManagement',
@@ -104,21 +105,7 @@ export default {
       }
     },
 
-    getImageUrl (path) {
-      if (!path) return ''
-      // 已经是完整 URL，直接返回
-      if (path.startsWith('http://') || path.startsWith('https://')) {
-        return path
-      }
-      // 计算后端基址：优先 VUE_APP_API_TARGET -> VUE_APP_BASE_URL -> this.baseUrl
-      const target = (process.env.VUE_APP_API_TARGET || process.env.VUE_APP_BASE_URL || this.baseUrl || '').replace(/\/$/, '')
-      // 以 / 开头的相对路径，直接拼接到后端域名上
-      if (path.startsWith('/')) {
-        return `${target}${path}`
-      }
-      // 其它（例如返回文件名或无前缀路径）也拼接
-      return `${target}/${path}`
-    },
+    getImageUrl,
 
     beforeUpload (file) {
       const isImage = file.type.startsWith('image/')

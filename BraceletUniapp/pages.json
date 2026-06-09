@@ -82,12 +82,27 @@
       "style": {"navigationBarTitleText": "DIY模板"}
     },
     {
+      "path": "pages/template/detail",
+      "style": {
+        "navigationBarTitleText": "模板详情",
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/admin/template",
       "style": {"navigationBarTitleText": "模板管理"}
     },
     {
       "path": "pages/login/index",
       "style": {"navigationBarTitleText": "微信登录"}
+    },
+    {
+      "path": "pages/privacy/index",
+      "style": {"navigationBarTitleText": "隐私政策"}
+    },
+    {
+      "path": "pages/terms/index",
+      "style": {"navigationBarTitleText": "用户服务协议"}
     },
     {
       "path": "pages/profile/edit",
